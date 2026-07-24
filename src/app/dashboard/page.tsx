@@ -33,7 +33,10 @@ import {
   CreditCard,
   Lock,
   Search,
-  Check
+  Check,
+  MoreHorizontal,
+  Pencil,
+  Copy
 } from "lucide-react";
 
 export default function DashboardPage() {
@@ -41,12 +44,15 @@ export default function DashboardPage() {
   const store = useStore();
   const { 
     currentUser: rawCurrentUser, 
+    clients,
     chatbots, 
     conversations, 
     activeChatbotId, 
     setCurrentUser, 
     setActiveChatbotId,
     addChatbot,
+    duplicateChatbot,
+    deleteChatbot,
     updateChatbotSettings,
     addFAQ,
     deleteFAQ,
@@ -69,6 +75,7 @@ export default function DashboardPage() {
 
   // Form states for adding items
   const [newBotName, setNewBotName] = useState("");
+  const [botSearch, setBotSearch] = useState("");
   const [faqQ, setFaqQ] = useState("");
   const [faqA, setFaqA] = useState("");
   const [urlInput, setUrlInput] = useState("");
@@ -531,118 +538,31 @@ export default function DashboardPage() {
 
   // OVERVIEW TAB
   function renderOverviewTab() {
+    const query = botSearch;
+    const filteredBots = clientBots.filter(b => b.name.toLowerCase().includes(query.toLowerCase()));
     return (
-      <div className="space-y-8 animate-fade-in">
-        {/* Banner */}
-        <div className="glass-card p-8 border-indigo-500/20 bg-gradient-to-r from-indigo-950/20 to-slate-900/40 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-48 h-48 bg-indigo-500/5 rounded-full blur-[60px]" />
-          <div className="relative max-w-2xl">
-            <h2 className="text-2xl font-extrabold text-white mb-2">Welcome Back to your AI Command Hub, {currentUser?.name}!</h2>
-            <p className="text-sm text-slate-400 leading-relaxed mb-6">
-              Create premium chatbot pipelines trained specifically on your corporate datasets. You can edit visual colors, generate embed scripts, and audit actual user inquiries instantly.
-            </p>
-            <div className="flex items-center gap-3">
-              <span className="text-xs font-bold text-slate-400">Current Corporate Status:</span>
-              <span className={`text-xs font-bold px-3 py-1 rounded-full border ${currentUser?.subscription?.plan === 'Full Ownership' ? "bg-purple-500/15 text-purple-300 border-purple-500/25" : "bg-indigo-500/15 text-indigo-300 border-indigo-500/25"}`}>
-                Plan: {currentUser?.subscription?.plan} ({currentUser?.subscription?.status})
-              </span>
-            </div>
-          </div>
+      <div className="workspace-home">
+        <div className="workspace-welcome">
+          <div><p className="workspace-kicker">{currentUser.companyName} / Workspace</p><h2>Chatbots</h2><p>Manage your AI assistants, knowledge, and deployments from one place.</p></div>
+          <button className="workspace-create" onClick={() => document.getElementById("new-chatbot")?.focus()}><Plus size={16} /> Create chatbot</button>
         </div>
-
-        {/* Stats row */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="glass-card p-6 border-slate-800 bg-slate-900/40">
-            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-1">Total Chatbots</span>
-            <div className="flex items-baseline gap-2.5">
-              <span className="text-3xl font-black text-white">{clientBots.length}</span>
-              <span className="text-xs text-slate-400">active configurations</span>
-            </div>
-          </div>
-          <div className="glass-card p-6 border-slate-800 bg-slate-900/40">
-            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-1">Total Conversations</span>
-            <div className="flex items-baseline gap-2.5">
-              <span className="text-3xl font-black text-white">{clientConversations.length}</span>
-              <span className="text-xs text-slate-400">total unique user logs</span>
-            </div>
-          </div>
-          <div className="glass-card p-6 border-slate-800 bg-slate-900/40">
-            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-1">Total Leads Captured</span>
-            <div className="flex items-baseline gap-2.5">
-              <span className="text-3xl font-black text-emerald-400">{totalLeads.length}</span>
-              <span className="text-xs text-slate-400">organic email contacts</span>
-            </div>
-          </div>
+        <div className="workspace-toolbar">
+          <div className="workspace-search"><Search size={17} /><input id="new-chatbot" placeholder="Search chatbots" value={query} onChange={e => setBotSearch(e.target.value)} /></div>
+          <span className="workspace-count">{clientBots.length} chatbot{clientBots.length === 1 ? "" : "s"}</span>
         </div>
-
-        {/* Bottom Row: Chatbots manager and Add Chatbot form */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* List of chatbots */}
-          <div className="glass-card border-slate-800">
-            <div className="p-5 border-b border-slate-850 flex items-center justify-between">
-              <h3 className="font-bold text-white text-sm">Your AI Chatbots</h3>
-              <span className="text-[10px] bg-slate-800 text-slate-300 font-bold px-2 py-1 rounded">Count: {clientBots.length}</span>
-            </div>
-            <div className="p-5 space-y-4 max-h-[280px] overflow-y-auto">
-              {clientBots.length === 0 ? (
-                <div className="text-center py-8 text-slate-500 text-xs">
-                  No chatbots created. Use the right form to build your first bot!
-                </div>
-              ) : (
-                clientBots.map(b => (
-                  <div 
-                    key={b.id}
-                    onClick={() => setActiveChatbotId(b.id)}
-                    className={`p-4 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${activeChatbotId === b.id ? "bg-indigo-600/10 border-indigo-500/40" : "bg-slate-950/60 border-slate-850 hover:border-slate-800"}`}
-                  >
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className="w-10 h-10 bg-slate-900 rounded-lg flex items-center justify-center text-xl border border-slate-800">{b.avatar}</div>
-                      <div className="min-w-0">
-                        <p className="text-xs font-bold text-white truncate">{b.name}</p>
-                        <p className="text-[10px] text-slate-500 truncate">Language: {b.language} | Hex: {b.brandColor}</p>
-                      </div>
-                    </div>
-                    {activeChatbotId === b.id && (
-                      <span className="text-[10px] text-indigo-400 font-bold flex items-center gap-1 shrink-0 bg-indigo-500/10 px-2 py-0.5 rounded-full border border-indigo-500/20">
-                        <Check className="w-3 h-3" /> Active
-                      </span>
-                    )}
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-
-          {/* Create new Chatbot */}
-          <div className="glass-card border-slate-800">
-            <div className="p-5 border-b border-slate-850">
-              <h3 className="font-bold text-white text-sm">Deploy New AI Assistant</h3>
-            </div>
-            <form onSubmit={handleCreateChatbotSubmit} className="p-5 space-y-4">
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block">Chatbot System Name</label>
-                <input 
-                  type="text" 
-                  placeholder="e.g. Apex Assistant"
-                  value={newBotName}
-                  onChange={(e) => setNewBotName(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl text-xs glass-input"
-                  required
-                />
-              </div>
-              <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-850 text-slate-400 text-xs leading-relaxed space-y-2">
-                <p className="font-bold text-slate-300">💡 Included Templates:</p>
-                <p>Generating a bot initializes it with preconfigured welcome dialogs, core business personality structures, and demo support FAQs instantly.</p>
-              </div>
-              <button 
-                type="submit"
-                className="w-full py-2.5 rounded-xl font-bold text-white bg-indigo-600 hover:bg-indigo-500 transition-all text-xs flex items-center justify-center gap-2 glow-btn shadow-md shadow-indigo-600/10"
-              >
-                <Plus className="w-4.5 h-4.5" /> Initialize Chatbot Pipeline
-              </button>
-            </form>
-          </div>
+        <div className="chatbot-list">
+          {filteredBots.map((b, index) => {
+            const client = clients.find(c => c.id === b.clientId);
+            return <article className="chatbot-row" key={b.id} onClick={() => setActiveChatbotId(b.id)}>
+              <div className="bot-avatar" style={{ background: `${b.brandColor}18`, color: b.brandColor }}>{b.avatar}</div>
+              <div className="bot-details"><h3>{b.name}</h3><p>{client?.companyName || "Workspace assistant"} · {b.language}</p></div>
+              <span className="status-badge"><i /> Live</span><div className="updated"><small>Last updated</small><b>{index === 0 ? "Today" : "Jul 21, 2026"}</b></div>
+              <div className="row-actions"><button title="Edit" onClick={(e) => { e.stopPropagation(); setActiveChatbotId(b.id); setActiveTab("builder"); }}><Pencil size={15} /></button><button title="Duplicate" onClick={(e) => { e.stopPropagation(); duplicateChatbot(b.id); }}><Copy size={15} /></button><button title="Delete" onClick={(e) => { e.stopPropagation(); if (confirm(`Delete ${b.name}?`)) deleteChatbot(b.id); }}><Trash2 size={15} /></button></div>
+            </article>;
+          })}
         </div>
+        <div className="workspace-models"><span>Service model</span><strong>Managed AI Chatbot Service</strong><strong>Full Ownership Transfer</strong></div>
+        <form onSubmit={handleCreateChatbotSubmit} className="create-inline"><input placeholder="Name your new chatbot" value={newBotName} onChange={e => setNewBotName(e.target.value)} required /><button><Plus size={15}/> Add chatbot</button></form>
       </div>
     );
   }
