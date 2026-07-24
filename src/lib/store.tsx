@@ -51,6 +51,8 @@ export interface Chatbot {
   pdfs: PDFDoc[];
   urls: URLItem[];
   faqs: FAQ[];
+  themeMode?: "light" | "dark" | "auto";
+  launcherIcon?: string;
 }
 
 export interface Lead {
@@ -184,6 +186,8 @@ const INITIAL_CHATBOTS: Chatbot[] = [
         answer: "Apex is SOC2 Type II certified. All data is encrypted in transit and at rest using AES-256 standards with active intrusion detection.",
       },
     ],
+    themeMode: "dark",
+    launcherIcon: "🤖",
   },
   {
     id: "bot-luxe",
@@ -215,6 +219,8 @@ const INITIAL_CHATBOTS: Chatbot[] = [
         answer: "Absolutely. Standard package includes complimentary Tesla chauffeur transfer from Kahului (OGG) or Aspen (ASE) airports.",
       },
     ],
+    themeMode: "light",
+    launcherIcon: "✨",
   },
 ];
 
@@ -540,6 +546,8 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
             answer: "You can leave your details right here in the chat and our team will reach out within a couple of hours, or check our website contact page!",
           },
         ],
+        themeMode: "light",
+        launcherIcon: "🤖",
       };
       const next = [...chatbots, newBot];
       syncChatbots(next);
