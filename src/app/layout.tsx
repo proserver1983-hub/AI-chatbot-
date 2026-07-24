@@ -3,8 +3,9 @@ import "./globals.css";
 import { StoreProvider } from "@/lib/store";
 
 export const metadata: Metadata = {
-  title: "ChatFlow AI - Luxury AI Chatbot Builder & Managed Platform",
-  description: "Create custom AI assistants trained on your corporate knowledge base. Choose our Monthly Maintenance managed package or Full Code Ownership Transfer plan.",
+  title: "ChatFlow — AI assistants your customers trust",
+  description:
+    "Create a helpful AI assistant trained on your business knowledge, embed it on your website, and turn conversations into qualified leads.",
 };
 
 export default function RootLayout({
@@ -13,11 +14,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="h-full antialiased dark">
-      <body className="min-h-full bg-slate-950 text-slate-100 flex flex-col font-sans">
-        <StoreProvider>
-          {children}
-        </StoreProvider>
+    <html lang="en" className="h-full antialiased">
+      <body className="min-h-full">
+        <StoreProvider>{children}</StoreProvider>
       </body>
     </html>
   );
