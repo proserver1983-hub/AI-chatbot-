@@ -21,7 +21,9 @@
     welcomeMessage: "Hello! How can I help you today?",
     personality: "Professional and polite.",
     businessInfo: "AI Chatbot Platform",
-    faqs: []
+    faqs: [],
+    themeMode: "light",
+    launcherIcon: "🤖"
   };
 
   let chatHistory = [];
@@ -326,10 +328,12 @@
     <!-- Launcher -->
     <div class="chatflow-launcher" id="chatflow-launcher-btn">
       <div class="chatflow-ping"></div>
-      <svg viewBox="0 0 24 24" id="launcher-open-icon">
-        <path d="M12 2C6.477 2 2 6.134 2 11.235c0 2.805 1.34 5.313 3.447 7.02l-.847 3.327c-.082.321.218.608.528.508l3.774-1.22c1.01.248 2.073.385 3.102.385 5.523 0 10-4.134 10-9.235C22 6.134 17.523 2 12 2zm1 14h-2v-2h2v2zm0-4h-2V7h2v5z"/>
-      </svg>
-      <svg viewBox="0 0 24 24" id="launcher-close-icon" style="display: none; width: 22px; height: 22px;">
+      <div id="launcher-icon-container" style="display: flex; align-items: center; justify-content: center; width: 100%; height: 100%;">
+        <svg viewBox="0 0 24 24" id="launcher-open-icon" style="width: 28px; height: 28px; fill: #ffffff;">
+          <path d="M12 2C6.477 2 2 6.134 2 11.235c0 2.805 1.34 5.313 3.447 7.02l-.847 3.327c-.082.321.218.608.528.508l3.774-1.22c1.01.248 2.073.385 3.102.385 5.523 0 10-4.134 10-9.235C22 6.134 17.523 2 12 2zm1 14h-2v-2h2v2zm0-4h-2V7h2v5z"/>
+        </svg>
+      </div>
+      <svg viewBox="0 0 24 24" id="launcher-close-icon" style="display: none; width: 22px; height: 22px; fill: #ffffff;">
         <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" />
       </svg>
     </div>
@@ -408,7 +412,9 @@
             welcomeMessage: currentBot.welcomeMessage || "Hello!",
             personality: currentBot.personality,
             businessInfo: currentBot.businessInfo,
-            faqs: currentBot.faqs || []
+            faqs: currentBot.faqs || [],
+            themeMode: currentBot.themeMode || "light",
+            launcherIcon: currentBot.launcherIcon || "🤖"
           };
           applyConfig();
           return;
@@ -426,6 +432,27 @@
     // Inject Custom Variables
     document.documentElement.style.setProperty('--brand-color', config.brandColor);
     
+    // Update Theme Mode
+    if (config.themeMode === 'dark' || (config.themeMode === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      chatWindow.style.backgroundColor = '#0d1117';
+      messagesContainer.style.backgroundColor = '#090d12';
+      chatWindow.style.color = '#ffffff';
+    } else {
+      chatWindow.style.backgroundColor = '#ffffff';
+      messagesContainer.style.backgroundColor = '#f8fafc';
+      chatWindow.style.color = '#0f172a';
+    }
+
+    // Update Launcher Icon
+    const iconContainer = document.getElementById('launcher-icon-container');
+    if (iconContainer) {
+      if (config.launcherIcon && config.launcherIcon !== '🤖') {
+        iconContainer.innerHTML = `<span style="font-size: 28px;">${config.launcherIcon}</span>`;
+      } else {
+        iconContainer.innerHTML = `<svg viewBox="0 0 24 24" style="width: 28px; height: 28px; fill: #ffffff;"><path d="M12 2C6.477 2 2 6.134 2 11.235c0 2.805 1.34 5.313 3.447 7.02l-.847 3.327c-.082.321.218.608.528.508l3.774-1.22c1.01.248 2.073.385 3.102.385 5.523 0 10-4.134 10-9.235C22 6.134 17.523 2 12 2zm1 14h-2v-2h2v2zm0-4h-2V7h2v5z"/></svg>`;
+      }
+    }
+
     // Update Header Text & Colors
     if (botTitle) botTitle.innerText = config.name;
     if (avatarIcon) avatarIcon.innerText = config.avatar;
@@ -465,6 +492,18 @@
 
     if (sender === 'user') {
       bubble.style.backgroundColor = config.brandColor;
+      bubble.style.color = '#ffffff';
+    } else {
+      // Bot bubble theme adjustments
+      if (config.themeMode === 'light' || (config.themeMode === 'auto' && !window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        bubble.style.backgroundColor = '#ffffff';
+        bubble.style.color = '#0f172a';
+        bubble.style.border = '1px solid #e2e8f0';
+      } else {
+        bubble.style.backgroundColor = '#1f2937';
+        bubble.style.color = '#e2e8f0';
+        bubble.style.border = '1px solid rgba(255, 255, 255, 0.05)';
+      }
     }
 
     row.appendChild(bubble);
@@ -481,6 +520,15 @@
     
     const bubble = document.createElement('div');
     bubble.className = 'chatflow-bubble bot chatflow-typing';
+    
+    if (config.themeMode === 'light' || (config.themeMode === 'auto' && !window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      bubble.style.backgroundColor = '#ffffff';
+      bubble.style.border = '1px solid #e2e8f0';
+    } else {
+      bubble.style.backgroundColor = '#1f2937';
+      bubble.style.border = '1px solid rgba(255, 255, 255, 0.05)';
+    }
+
     bubble.innerHTML = '<span></span><span></span><span></span>';
     
     row.appendChild(bubble);

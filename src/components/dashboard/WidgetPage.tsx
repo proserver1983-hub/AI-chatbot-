@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 
 export default function WidgetPage() {
-  const { chatbots, activeChatbotId } = useStore();
+  const { chatbots, activeChatbotId, updateChatbotSettings } = useStore();
   const bot = chatbots.find((b) => b.id === activeChatbotId);
   const [copied, setCopied] = useState(false);
   const [activeDevice, setActiveDevice] = useState<"desktop" | "mobile">("desktop");
@@ -49,8 +49,61 @@ export default function WidgetPage() {
       </div>
 
       <div className="cf-widget-layout">
-        {/* Embed code section */}
+        {/* Settings and Code Panel */}
         <div className="cf-widget-code-panel">
+          {/* Widget Settings */}
+          <div className="cf-widget-section-header">
+            <Palette size={18} />
+            <h3>Widget Settings</h3>
+          </div>
+          <div className="cf-widget-settings-grid">
+            <div className="cf-form-field">
+              <label>Theme Mode</label>
+              <select 
+                className="cf-input" 
+                value={bot.themeMode || "light"}
+                onChange={(e) => updateChatbotSettings(bot.id, { themeMode: e.target.value as any })}
+              >
+                <option value="light">Light Mode</option>
+                <option value="dark">Dark Mode</option>
+                <option value="auto">Auto (System)</option>
+              </select>
+            </div>
+            <div className="cf-form-field">
+              <label>Floating Button Icon</label>
+              <select 
+                className="cf-input" 
+                value={bot.launcherIcon || "🤖"}
+                onChange={(e) => updateChatbotSettings(bot.id, { launcherIcon: e.target.value })}
+              >
+                <option value="🤖">Robot 🤖</option>
+                <option value="✨">Sparkles ✨</option>
+                <option value="💬">Chat 💬</option>
+                <option value="🙋">Person 🙋</option>
+                <option value="⚡">Zap ⚡</option>
+              </select>
+            </div>
+            <div className="cf-form-field">
+              <label>Brand Color</label>
+              <div className="cf-color-picker-wrap">
+                <input 
+                  type="color" 
+                  value={bot.brandColor} 
+                  onChange={(e) => updateChatbotSettings(bot.id, { brandColor: e.target.value })}
+                  className="cf-color-input"
+                />
+                <input 
+                  type="text" 
+                  value={bot.brandColor} 
+                  onChange={(e) => updateChatbotSettings(bot.id, { brandColor: e.target.value })}
+                  className="cf-input cf-color-text"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="cf-divider" />
+
           <div className="cf-widget-section-header">
             <Code size={18} />
             <h3>Embed Code</h3>
@@ -153,7 +206,7 @@ export default function WidgetPage() {
               {/* Chat widget bubble */}
               <div className="cf-preview-widget">
                 <div className="cf-preview-widget-bubble" style={{ background: bot.brandColor }}>
-                  <MessageCircle size={22} color="white" />
+                  <span style={{ fontSize: '22px' }}>{bot.launcherIcon || "🤖"}</span>
                 </div>
               </div>
             </div>
@@ -163,11 +216,11 @@ export default function WidgetPage() {
           <div className="cf-preview-info">
             <div className="cf-preview-info-row">
               <Palette size={14} />
-              <span>Brand color: <strong>{bot.brandColor}</strong></span>
+              <span>Theme: <strong>{(bot.themeMode || "light").toUpperCase()}</strong></span>
             </div>
             <div className="cf-preview-info-row">
               <MessageCircle size={14} />
-              <span>Bot: <strong>{bot.name}</strong></span>
+              <span>Icon: <strong>{bot.launcherIcon || "🤖"}</strong></span>
             </div>
             <div className="cf-preview-info-row">
               <ExternalLink size={14} />

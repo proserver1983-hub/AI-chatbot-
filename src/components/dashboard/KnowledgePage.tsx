@@ -200,22 +200,24 @@ export default function KnowledgePage() {
               </div>
             </div>
 
-            <form className="cf-kb-add-form" onSubmit={handleAddPdf}>
-              <div className="cf-kb-add-input-wrap">
-                <Upload size={16} className="cf-kb-add-icon" />
-                <input
-                  type="text"
-                  placeholder="Document name (e.g. Product_Manual.pdf)"
-                  value={pdfName}
-                  onChange={(e) => setPdfName(e.target.value)}
-                  className="cf-input cf-kb-add-input"
-                  required
-                />
-              </div>
-              <button type="submit" className="cf-btn-primary">
-                <Plus size={14} /> Add Document
-              </button>
-            </form>
+            <div className="cf-kb-upload-area" onClick={() => document.getElementById('kb-file-input')?.click()}>
+              <Upload size={32} />
+              <p>Click to upload or drag and drop</p>
+              <span>PDF, DOCX, TXT, CSV (max 10MB)</span>
+              <input 
+                id="kb-file-input"
+                type="file" 
+                hidden 
+                accept=".pdf,.docx,.txt,.csv" 
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    const sizeStr = (file.size / (1024 * 1024)).toFixed(1) + " MB";
+                    addPDF(bot.id, file.name, sizeStr);
+                  }
+                }}
+              />
+            </div>
 
             <div className="cf-kb-list">
               {bot.pdfs.length === 0 ? (
