@@ -197,7 +197,7 @@ export default function HandoverPage() {
 
           <p className="cf-handover-note">
             <AlertCircle size={13} />
-            This action updates your subscription status to "Full Ownership" and "Completed".
+            This action updates your subscription status to &quot;Full Ownership&quot; and &quot;Completed&quot;.
           </p>
         </div>
       </div>

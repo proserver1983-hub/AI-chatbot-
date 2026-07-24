@@ -170,11 +170,22 @@ export default function KnowledgePage() {
                         <span className="cf-kb-status crawled">
                           <CheckCircle size={11} /> {u.status}
                         </span>
+                        <span className="cf-kb-item-date">Updated recently</span>
                       </span>
                     </div>
-                    <button className="cf-kb-item-delete" onClick={() => deleteURL(bot.id, u.id)}>
-                      <Trash2 size={14} />
-                    </button>
+                    <div className="cf-kb-item-actions">
+                      <button
+                        className="cf-btn-ghost cf-btn-sm"
+                        onClick={() => {
+                          alert(`Refresh crawl for ${u.url} started.`);
+                        }}
+                      >
+                        Refresh
+                      </button>
+                      <button className="cf-kb-item-delete" onClick={() => deleteURL(bot.id, u.id)}>
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
                   </div>
                 ))
               )}

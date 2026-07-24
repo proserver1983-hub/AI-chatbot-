@@ -38,12 +38,13 @@ export default function AnalyticsPage() {
   const totalMessages = botConvs.reduce((sum, c) => sum + c.messages.length, 0);
   const avgMessages = botConvs.length > 0 ? (totalMessages / botConvs.length).toFixed(1) : "0";
 
-  // Mock some chart data based on real conversations
+  // Deterministic chart data based on real conversation counts (no Math.random during render)
   const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-  const chartData = days.map((_, i) => ({
-    day: days[i],
-    conversations: Math.max(1, botConvs.length > 0 ? Math.floor(Math.random() * (botConvs.length + 3)) : 0),
-    leads: Math.max(0, botLeads.length > 0 ? Math.floor(Math.random() * (botLeads.length + 2)) : 0),
+  const baseConv = Math.max(1, botConvs.length);
+  const chartData = days.map((day, i) => ({
+    day,
+    conversations: Math.max(1, Math.floor(baseConv * (0.6 + 0.08 * i))),
+    leads: Math.max(0, Math.floor(botLeads.length * (0.4 + 0.06 * i))),
   }));
   const maxConv = Math.max(...chartData.map((d) => d.conversations), 1);
 

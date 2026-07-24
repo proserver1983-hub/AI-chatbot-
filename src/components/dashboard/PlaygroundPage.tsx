@@ -5,7 +5,7 @@ import { useStore } from "@/lib/store";
 import { Send, RotateCcw, Save, Check, Bot, Sparkles } from "lucide-react";
 
 export default function PlaygroundPage() {
-  const { currentUser, chatbots, activeChatbotId, updateChatbotSettings, sendMessage } = useStore();
+  const { chatbots, activeChatbotId, updateChatbotSettings, sendMessage } = useStore();
   const bot = chatbots.find((b) => b.id === activeChatbotId);
 
   const [name, setName] = useState(bot?.name || "");
@@ -17,27 +17,11 @@ export default function PlaygroundPage() {
   const [saved, setSaved] = useState(false);
 
   // Chat preview state
-  const [chatHistory, setChatHistory] = useState<Array<{ sender: "user" | "bot"; text: string; timestamp: string }>>([]);
+  const [chatHistory, setChatHistory] = useState<Array<{ sender: "user" | "bot"; text: string; timestamp: string }>>(bot ? [{ sender: "bot", text: bot.welcomeMessage, timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) }] : []);
   const [chatInput, setChatInput] = useState("");
   const [chatLoading, setChatLoading] = useState(false);
   const [chatConvId, setChatConvId] = useState<string | undefined>(undefined);
   const chatEndRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (bot) {
-      setName(bot.name);
-      setAvatar(bot.avatar);
-      setBrandColor(bot.brandColor);
-      setWelcomeMessage(bot.welcomeMessage);
-      setPersonality(bot.personality);
-      setLanguage(bot.language);
-      setChatHistory([{
-        sender: "bot",
-        text: bot.welcomeMessage,
-        timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-      }]);
-    }
-  }, [bot?.id]);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -98,7 +82,7 @@ export default function PlaygroundPage() {
   const avatarOptions = ["🤖", "✨", "💬", "👑", "💡", "⚡", "🎯", "🔥", "🌟", "🧠"];
 
   return (
-    <div className="cf-playground">
+    <div className="cf-playground" key={bot?.id}>
       {/* Left panel - Settings */}
       <div className="cf-playground-settings">
         <div className="cf-panel">
@@ -220,7 +204,46 @@ export default function PlaygroundPage() {
                 <div className="cf-chat-bubble" style={msg.sender === "user" ? { background: brandColor } : {}}>
                   {msg.text}
                 </div>
-                <span className="cf-chat-time">{msg.timestamp}</span>
+                <div className="cf-chat-msg-actions">
+                  <span className="cf-chat-time">{msg.timestamp}</span>
+                  {msg.sender === "bot" && (
+                    <>
+                      <button
+                        className="cf-chat-action-btn"
+                        title="Regenerate"
+                        onClick={async () => {
+                          if (chatLoading) return;
+                          const prevHistory = chatHistory.slice(0, -1);
+                          const userMsg = chatHistory[chatHistory.length - 1];
+                          if (!userMsg || userMsg.sender !== "user") return;
+                          setChatHistory(prevHistory);
+                          setChatLoading(true);
+                          try {
+                            const res = await sendMessage(bot.id, userMsg.text, chatConvId);
+                            setChatHistory((prev) => [...prev, { sender: "bot", text: res.reply, timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) }]);
+                            setChatConvId(res.conversationId);
+                          } catch (e) {
+                            console.error(e);
+                          } finally {
+                            setChatLoading(false);
+                          }
+                        }}
+                      >
+                        <RotateCcw size={12} />
+                      </button>
+                      <button
+                        className="cf-chat-action-btn"
+                        title="Copy response"
+                        onClick={() => {
+                          navigator.clipboard.writeText(msg.text);
+                          alert("Response copied to clipboard!");
+                        }}
+                      >
+                        <Save size={12} />
+                      </button>
+                    </>
+                  )}
+                </div>
               </div>
             ))}
             {chatLoading && (
