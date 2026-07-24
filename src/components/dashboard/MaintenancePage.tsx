@@ -7,12 +7,7 @@ import {
   Shield,
   CreditCard,
   CheckCircle,
-  Calendar,
-  Clock,
   HeadphonesIcon,
-  Server,
-  AlertTriangle,
-  ArrowRight,
   Send,
 } from "lucide-react";
 

@@ -5,9 +5,7 @@ import { useStore } from "@/lib/store";
 import {
   Bot,
   MessageSquare,
-  Users,
   Search,
-  ChevronRight,
   Mail,
   Phone,
   MapPin,
@@ -17,7 +15,7 @@ import {
 } from "lucide-react";
 
 export default function ConversationsPage() {
-  const { chatbots, conversations, activeChatbotId } = useStore();
+  const { chatbots, conversations, activeChatbotId, deleteConversation } = useStore();
   const bot = chatbots.find((b) => b.id === activeChatbotId);
 
   const [selectedConvId, setSelectedConvId] = useState<string | null>(null);
@@ -78,8 +76,8 @@ export default function ConversationsPage() {
 
   const handleDeleteConv = () => {
     if (!selectedConv || !confirm("Delete this conversation permanently?")) return;
-    // In a real DB setup, we'd call an API. For now, filter from local state.
-    alert("In production, this calls the database delete endpoint. (Demo: conversation removed from local state)");
+    deleteConversation(selectedConv.id);
+    setSelectedConvId(null);
   };
 
   return (

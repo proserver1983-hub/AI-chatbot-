@@ -10,6 +10,7 @@ const viewLabels: Record<DashboardView, string> = {
   playground: "Playground",
   knowledge: "Knowledge",
   conversations: "Conversations",
+  leads: "Leads",
   analytics: "Analytics",
   widget: "Widget",
   maintenance: "Maintenance",

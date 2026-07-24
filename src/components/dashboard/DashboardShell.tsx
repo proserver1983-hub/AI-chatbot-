@@ -11,6 +11,7 @@ import KnowledgePage from "./KnowledgePage";
 import ConversationsPage from "./ConversationsPage";
 import AnalyticsPage from "./AnalyticsPage";
 import WidgetPage from "./WidgetPage";
+import LeadsPage from "./LeadsPage";
 import MaintenancePage from "./MaintenancePage";
 import HandoverPage from "./HandoverPage";
 
@@ -50,6 +51,8 @@ export default function DashboardShell() {
         return <ConversationsPage />;
       case "analytics":
         return <AnalyticsPage />;
+      case "leads":
+        return <LeadsPage />;
       case "widget":
         return <WidgetPage />;
       case "maintenance":

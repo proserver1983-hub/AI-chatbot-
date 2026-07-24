@@ -148,8 +148,8 @@ export default function AdminPanelPage() {
               <p className="text-2xl font-black text-white mt-1">{conversations.length}</p>
             </div>
             <div className="glass-card p-5 border-slate-850 bg-slate-900/20">
-              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block">Estimated Payments Revenue</span>
-              <p className="text-2xl font-black text-emerald-400 mt-1">$7,890</p>
+              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block">Active Subscriptions</span>
+              <p className="text-2xl font-black text-emerald-400 mt-1">{clients.filter(c => c.role !== 'admin' && c.subscription.status === 'Active').length}</p>
             </div>
           </div>
 

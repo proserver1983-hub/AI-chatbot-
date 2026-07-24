@@ -271,3 +271,132 @@ CREATE POLICY "Clients can view analytics" ON public.analytics_events
 CREATE INDEX IF NOT EXISTS idx_analytics_chatbot ON public.analytics_events(chatbot_id);
 CREATE INDEX IF NOT EXISTS idx_analytics_type ON public.analytics_events(event_type);
 CREATE INDEX IF NOT EXISTS idx_analytics_created ON public.analytics_events(created_at);
+
+-- ============================================
+-- 13. STORAGE BUCKETS
+-- ============================================
+
+-- Knowledge documents (PDFs, DOCX, TXT, CSV)
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+VALUES (
+  'knowledge-documents',
+  'knowledge-documents',
+  false,
+  52428800, -- 50 MB
+  ARRAY['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain', 'text/csv', 'application/msword']
+) ON CONFLICT (id) DO NOTHING;
+
+-- Chatbot avatars (custom images)
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+VALUES (
+  'chatbot-avatars',
+  'chatbot-avatars',
+  true,
+  5242880, -- 5 MB
+  ARRAY['image/png', 'image/jpeg', 'image/webp', 'image/gif']
+) ON CONFLICT (id) DO NOTHING;
+
+-- Ownership transfer packages
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+VALUES (
+  'ownership-packages',
+  'ownership-packages',
+  false,
+  104857600, -- 100 MB
+  ARRAY['application/zip', 'application/octet-stream']
+) ON CONFLICT (id) DO NOTHING;
+
+-- ============================================
+-- 14. STORAGE POLICIES
+-- ============================================
+
+-- Knowledge documents: clients manage files for their own chatbots
+CREATE POLICY "Clients can upload knowledge docs" ON storage.objects
+  FOR INSERT WITH CHECK (
+    bucket_id = 'knowledge-documents'
+    AND (storage.foldername(name))[1] IN (
+      SELECT id::text FROM public.chatbots WHERE client_id = auth.uid()::text
+    )
+  );
+
+CREATE POLICY "Clients can read own knowledge docs" ON storage.objects
+  FOR SELECT USING (
+    bucket_id = 'knowledge-documents'
+    AND (storage.foldername(name))[1] IN (
+      SELECT id::text FROM public.chatbots WHERE client_id = auth.uid()::text
+    )
+  );
+
+CREATE POLICY "Clients can delete own knowledge docs" ON storage.objects
+  FOR DELETE USING (
+    bucket_id = 'knowledge-documents'
+    AND (storage.foldername(name))[1] IN (
+      SELECT id::text FROM public.chatbots WHERE client_id = auth.uid()::text
+    )
+  );
+
+-- Chatbot avatars: public read, client write
+CREATE POLICY "Anyone can view avatars" ON storage.objects
+  FOR SELECT USING (bucket_id = 'chatbot-avatars');
+
+CREATE POLICY "Clients can upload avatars" ON storage.objects
+  FOR INSERT WITH CHECK (
+    bucket_id = 'chatbot-avatars'
+    AND (storage.foldername(name))[1] IN (
+      SELECT id::text FROM public.chatbots WHERE client_id = auth.uid()::text
+    )
+  );
+
+-- Ownership packages: admin-only write, client read own
+CREATE POLICY "Admin can manage ownership packages" ON storage.objects
+  FOR ALL USING (
+    bucket_id = 'ownership-packages'
+    AND (SELECT role FROM public.clients WHERE id = auth.uid()::text) = 'admin'
+  );
+
+CREATE POLICY "Clients can download own packages" ON storage.objects
+  FOR SELECT USING (
+    bucket_id = 'ownership-packages'
+    AND (storage.foldername(name))[1] = auth.uid()::text
+  );
+
+-- ============================================
+-- 15. UPDATED_AT TRIGGER FUNCTION
+-- ============================================
+
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = CURRENT_TIMESTAMP;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Apply trigger to all tables with updated_at
+CREATE TRIGGER update_clients_updated_at
+  BEFORE UPDATE ON public.clients
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_chatbots_updated_at
+  BEFORE UPDATE ON public.chatbots
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_knowledge_sources_updated_at
+  BEFORE UPDATE ON public.knowledge_sources
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_conversations_updated_at
+  BEFORE UPDATE ON public.conversations
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_leads_updated_at
+  BEFORE UPDATE ON public.leads
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_widget_settings_updated_at
+  BEFORE UPDATE ON public.widget_settings
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_ai_settings_updated_at
+  BEFORE UPDATE ON public.ai_settings
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
