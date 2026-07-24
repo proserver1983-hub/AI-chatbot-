@@ -10,7 +10,7 @@ export default function PlaygroundPage() {
 
   const [name, setName] = useState(bot?.name || "");
   const [avatar, setAvatar] = useState(bot?.avatar || "🤖");
-  const [brandColor, setBrandColor] = useState(bot?.brandColor || "#2563eb");
+  const [brandColor, setBrandColor] = useState(bot?.brandColor || "#6366f1");
   const [welcomeMessage, setWelcomeMessage] = useState(bot?.welcomeMessage || "");
   const [personality, setPersonality] = useState(bot?.personality || "");
   const [language, setLanguage] = useState(bot?.language || "English");

@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { useStore, Chatbot } from "@/lib/store";
+import { useStore } from "@/lib/store";
 import {
   Bot,
   ChevronDown,
@@ -10,7 +10,6 @@ import {
   MessageCircle,
   BookOpen,
   BarChart3,
-  Settings,
   Puzzle,
   Wrench,
   Package,
@@ -21,7 +20,6 @@ import {
   Users,
   X,
   Menu,
-  Search,
   Sparkles,
 } from "lucide-react";
 
@@ -30,6 +28,7 @@ export type DashboardView =
   | "playground"
   | "knowledge"
   | "conversations"
+  | "leads"
   | "analytics"
   | "widget"
   | "maintenance"
@@ -74,7 +73,6 @@ export default function Sidebar({
   if (!currentUser) return null;
 
   const clientBots = chatbots.filter((b) => b.clientId === currentUser.id);
-  const activeBot = chatbots.find((b) => b.id === activeChatbotId);
 
   const handleCreateBot = (e: React.FormEvent) => {
     e.preventDefault();
@@ -90,6 +88,7 @@ export default function Sidebar({
     { id: "playground", label: "Playground", icon: <MessageCircle size={18} />, requiresBot: true },
     { id: "knowledge", label: "Knowledge", icon: <BookOpen size={18} />, requiresBot: true },
     { id: "conversations", label: "Conversations", icon: <Users size={18} />, requiresBot: true },
+    { id: "leads", label: "Leads", icon: <Users size={18} />, requiresBot: true },
     { id: "analytics", label: "Analytics", icon: <BarChart3 size={18} />, requiresBot: true },
     { id: "widget", label: "Widget", icon: <Puzzle size={18} />, requiresBot: true },
     { id: "maintenance", label: "Maintenance", icon: <Wrench size={18} /> },

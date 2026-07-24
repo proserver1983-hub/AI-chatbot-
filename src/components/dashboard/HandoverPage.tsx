@@ -13,7 +13,6 @@ import {
   Lock,
   Check,
   AlertCircle,
-  ArrowRight,
   Shield,
   Box,
   FolderOpen,

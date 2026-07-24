@@ -272,6 +272,7 @@ interface StoreContextType {
   // Conversational API Simulation
   sendMessage: (botId: string, text: string, conversationId?: string) => Promise<{ reply: string; conversationId: string }>;
   createConversation: (botId: string) => Conversation;
+  deleteConversation: (conversationId: string) => void;
   
   // Admin functions
   updateSubscription: (clientId: string, plan: ClientProfile["subscription"]["plan"], status: ClientProfile["subscription"]["status"]) => void;
@@ -666,6 +667,11 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     syncChatbots(remainingBots);
   };
 
+  const deleteConversation = (conversationId: string) => {
+    const updated = conversations.filter(c => c.id !== conversationId);
+    syncConversations(updated);
+  };
+
   return (
     <StoreContext.Provider
       value={{
@@ -692,6 +698,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         updateSubscription,
         startOwnershipTransfer,
         deleteClient,
+        deleteConversation,
       }}
     >
       {children}

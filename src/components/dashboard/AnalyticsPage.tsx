@@ -3,19 +3,12 @@
 import React from "react";
 import { useStore } from "@/lib/store";
 import {
-  Bot,
   Users,
   MessageSquare,
-  TrendingUp,
   BarChart3,
   Target,
   Clock,
-  Zap,
-  ArrowUpRight,
-  ArrowDownRight,
   Mail,
-  Phone,
-  Globe,
   MapPin,
 } from "lucide-react";
 
@@ -64,9 +57,6 @@ export default function AnalyticsPage() {
             <div className="cf-analytics-stat-icon blue">
               <MessageSquare size={18} />
             </div>
-            <span className="cf-analytics-stat-trend up">
-              <ArrowUpRight size={13} /> +12%
-            </span>
           </div>
           <div className="cf-analytics-stat-value">{totalMessages}</div>
           <div className="cf-analytics-stat-label">Total Messages</div>
@@ -77,9 +67,6 @@ export default function AnalyticsPage() {
             <div className="cf-analytics-stat-icon green">
               <Users size={18} />
             </div>
-            <span className="cf-analytics-stat-trend up">
-              <ArrowUpRight size={13} /> +8%
-            </span>
           </div>
           <div className="cf-analytics-stat-value">{botConvs.length}</div>
           <div className="cf-analytics-stat-label">Total Conversations</div>
@@ -90,9 +77,6 @@ export default function AnalyticsPage() {
             <div className="cf-analytics-stat-icon purple">
               <Target size={18} />
             </div>
-            <span className="cf-analytics-stat-trend up">
-              <ArrowUpRight size={13} /> +24%
-            </span>
           </div>
           <div className="cf-analytics-stat-value">{botLeads.length}</div>
           <div className="cf-analytics-stat-label">Leads Captured</div>
@@ -103,9 +87,6 @@ export default function AnalyticsPage() {
             <div className="cf-analytics-stat-icon amber">
               <Clock size={18} />
             </div>
-            <span className="cf-analytics-stat-trend down">
-              <ArrowDownRight size={13} /> -5%
-            </span>
           </div>
           <div className="cf-analytics-stat-value">{avgMessages}</div>
           <div className="cf-analytics-stat-label">Avg Messages/Conv</div>

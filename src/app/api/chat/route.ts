@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
   try {
-    const { message, chatbotId, businessInfo, faqs, personality, aiProvider, aiModel, knowledgeSources } = await request.json();
+    const { message, chatbotId, businessInfo, faqs, personality, aiProvider, aiModel, knowledgeSources, conversationHistory } = await request.json();
 
     if (!message || typeof message !== "string") {
       return NextResponse.json({ error: "Message is required and must be a string" }, { status: 400 });
@@ -64,6 +64,22 @@ INSTRUCTIONS:
     if ((preferredProvider === "openai" || !preferredProvider) && openAIKey) {
       try {
         const modelName = aiModel || "gpt-4o-mini";
+
+        // Build message history for conversation memory
+        const messages: Array<{ role: string; content: string }> = [
+          { role: "system", content: systemPrompt },
+        ];
+
+        if (Array.isArray(conversationHistory)) {
+          for (const msg of conversationHistory.slice(-10)) {
+            if (msg.role === "user" || msg.role === "assistant") {
+              messages.push({ role: msg.role, content: msg.content });
+            }
+          }
+        }
+
+        messages.push({ role: "user", content: message });
+
         const response = await fetch("https://api.openai.com/v1/chat/completions", {
           method: "POST",
           headers: {
@@ -72,10 +88,7 @@ INSTRUCTIONS:
           },
           body: JSON.stringify({
             model: modelName,
-            messages: [
-              { role: "system", content: systemPrompt },
-              { role: "user", content: message },
-            ],
+            messages,
             temperature: 0.7,
           }),
         });

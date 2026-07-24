@@ -3,7 +3,6 @@
 import React, { useState } from "react";
 import { useStore } from "@/lib/store";
 import {
-  Bot,
   Globe,
   FileText,
   MessageSquare,
@@ -14,7 +13,6 @@ import {
   Link2,
   HelpCircle,
   Save,
-  ExternalLink,
   File,
   Database,
 } from "lucide-react";
@@ -22,7 +20,7 @@ import {
 type KnowledgeTab = "business" | "urls" | "files" | "faqs";
 
 export default function KnowledgePage() {
-  const { currentUser, chatbots, activeChatbotId, updateChatbotSettings, addFAQ, deleteFAQ, addURL, deleteURL, addPDF, deletePDF } = useStore();
+  const { chatbots, activeChatbotId, updateChatbotSettings, addFAQ, deleteFAQ, addURL, deleteURL, addPDF, deletePDF } = useStore();
   const bot = chatbots.find((b) => b.id === activeChatbotId);
 
   const [activeTab, setActiveTab] = useState<KnowledgeTab>("business");
