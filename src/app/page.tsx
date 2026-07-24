@@ -22,33 +22,33 @@ import { useStore } from "@/lib/store";
 const features = [
   {
     icon: Database,
-    title: "Train on your knowledge",
-    copy: "Bring in web pages, documents, and Q&As. Keep every answer grounded in the information your team trusts.",
+    title: "Train each client's assistant",
+    copy: "Bring in web pages, documents, and Q&As for each client. Keep every answer grounded in the information their customers trust.",
   },
   {
     icon: Sliders,
-    title: "Make it yours",
-    copy: "Set your assistant’s tone, welcome message, language, and brand color without asking engineering for help.",
+    title: "White-label the experience",
+    copy: "Set the assistant’s tone, welcome message, language, and brand color so every deployment feels native to the client’s brand.",
   },
   {
     icon: Code,
-    title: "Embed in minutes",
-    copy: "Copy one lightweight script into any site. Your assistant is ready wherever your customers have questions.",
+    title: "Deploy without the bottleneck",
+    copy: "Copy one lightweight script into any client site. Your team can launch updates without waiting on engineering.",
   },
   {
     icon: MessageSquare,
-    title: "Turn chats into leads",
-    copy: "Capture contact details naturally in conversations and give your team context before they follow up.",
+    title: "Prove client ROI",
+    copy: "Capture leads and conversation trends naturally, then give clients clear outcomes they can see and share.",
   },
   {
     icon: LineChart,
-    title: "See what matters",
-    copy: "Review conversations, common questions, and lead activity in one focused workspace.",
+    title: "Manage every account",
+    copy: "Review conversations, common questions, and lead activity across every client in one focused workspace.",
   },
   {
     icon: FileText,
-    title: "Own your deployment",
-    copy: "Choose managed maintenance or receive a complete handover package for your own infrastructure.",
+    title: "Offer flexible handover",
+    copy: "Keep managing the account or offer a complete source-code and deployment handover when the client is ready.",
   },
 ];
 
@@ -113,12 +113,12 @@ export default function LandingPage() {
         <section className="hero-section">
           <div className="marketing-container">
             <div className="hero-content">
-              <span className="eyebrow"><Sparkles /> AI customer support, made simple</span>
+              <span className="eyebrow"><Sparkles /> The AI chatbot platform for agencies</span>
               <h1 className="hero-title">
-                Build an AI assistant<br />your customers <span className="accent">trust.</span>
+                Manage AI chatbots<br />for every client <span className="accent">you serve.</span>
               </h1>
               <p className="hero-copy">
-                Train a helpful chatbot on your business, add it to your website, and turn every conversation into a better customer experience.
+                Launch branded, client-ready AI chatbots from one agency workspace. Configure knowledge, manage deployments, and deliver measurable results without rebuilding the same system every time.
               </p>
               <div className="hero-actions">
                 <Link href="/dashboard" onClick={startWorkspace} className="button-primary">
@@ -127,9 +127,9 @@ export default function LandingPage() {
                 <a href="#product" className="button-secondary">See how it works</a>
               </div>
               <div className="reassurance">
-                <span><CheckCircle /> No code required</span>
-                <span><CheckCircle /> Set up in minutes</span>
-                <span><CheckCircle /> Your knowledge, your voice</span>
+                <span><CheckCircle /> No engineering bottleneck</span>
+                <span><CheckCircle /> Manage every client</span>
+                <span><CheckCircle /> Your brand, their business</span>
               </div>
             </div>
 
@@ -140,7 +140,7 @@ export default function LandingPage() {
               </div>
               <div className="product-body">
                 <aside className="preview-sidebar">
-                  <div className="preview-brand"><span>✦</span> Acme workspace</div>
+                  <div className="preview-brand"><span>✦</span> Northstar Agency</div>
                   <div className="preview-menu">
                     <span><LineChart /> Overview</span>
                     <span><Bot /> Assistants</span>
@@ -152,10 +152,10 @@ export default function LandingPage() {
                 <div className="preview-main">
                   <div className="preview-topline">
                     <div>
-                      <p className="preview-kicker">Good morning, Alex</p>
-                      <h2 className="preview-title">Your assistant is ready to help</h2>
+                      <p className="preview-kicker">Good morning, Maya</p>
+                      <h2 className="preview-title">Your client portfolio is on track</h2>
                     </div>
-                    <span className="live-pill">Live on your website</span>
+                    <span className="live-pill">12 client workspaces live</span>
                   </div>
                   <div className="preview-stats">
                     <div className="preview-stat"><small>Conversations</small><strong>1,284</strong></div>
@@ -185,9 +185,9 @@ export default function LandingPage() {
         <section id="features" className="section section-soft">
           <div className="marketing-container">
             <div className="section-heading">
-              <span className="eyebrow">Everything in one place</span>
-              <h2>From first question to meaningful conversation</h2>
-              <p>Give your team a clear, calm way to create and improve AI support without adding another complicated tool.</p>
+              <span className="eyebrow">Built for agency teams</span>
+              <h2>Deliver better chatbots, at scale</h2>
+              <p>Give your team one calm workspace to build, brand, monitor, and hand off AI chatbots for every client.</p>
             </div>
             <div className="feature-grid">
               {features.map(({ icon: Icon, title, copy }) => (
@@ -204,13 +204,13 @@ export default function LandingPage() {
         <section className="section">
           <div className="marketing-container split-feature">
             <div className="split-copy">
-              <span className="eyebrow"><Globe /> Built for your website</span>
-              <h2>A helpful answer is always one click away.</h2>
-              <p>Give visitors a fast, on-brand conversation before they leave your site. ChatFlow keeps the experience personal while your team stays in control.</p>
+              <span className="eyebrow"><Globe /> Built for client delivery</span>
+              <h2>Give every client a helpful answer, one click away.</h2>
+              <p>Give visitors a fast, on-brand conversation before they leave a client’s site. ChatFlow keeps delivery personal while your agency stays in control.</p>
               <ul className="tick-list">
-                <li><CheckCircle /> Match your brand with custom colors and assistant settings.</li>
-                <li><CheckCircle /> Keep answers aligned to approved business knowledge.</li>
-                <li><CheckCircle /> Capture qualified leads with the full conversation context.</li>
+                <li><CheckCircle /> Launch each chatbot with the client’s colors, voice, and assistant settings.</li>
+                <li><CheckCircle /> Keep every answer aligned to the client’s approved business knowledge.</li>
+                <li><CheckCircle /> Capture qualified leads and report the full conversation context back to the client.</li>
               </ul>
             </div>
             <div className="chat-demo" aria-label="Assistant chat preview">
@@ -231,36 +231,36 @@ export default function LandingPage() {
         <section id="pricing" className="section section-soft">
           <div className="marketing-container">
             <div className="section-heading">
-              <span className="eyebrow">Simple options</span>
-              <h2>Choose the support model that fits</h2>
-              <p>Start with a fully managed chatbot, or choose a complete ownership handover when you are ready to run it yourself.</p>
+              <span className="eyebrow">Designed for agency growth</span>
+              <h2>Choose how you deliver for clients</h2>
+              <p>Build recurring service revenue with managed client chatbots, or deliver a complete ownership handover when the engagement calls for it.</p>
             </div>
             <div className="pricing-grid">
               <article className="pricing-card">
                 <span className="plan-label">Managed</span>
-                <h3>Managed AI Chatbot</h3>
-                <p>Hands-on setup and ongoing maintenance from our team.</p>
+                <h3>Managed Client Chatbots</h3>
+                <p>Launch and maintain branded chatbots for your clients with a dependable delivery partner.</p>
                 <div className="price"><strong>$199</strong><span>per month</span></div>
                 <ul className="tick-list">
-                  <li><CheckCircle /> Custom assistant configuration</li>
-                  <li><CheckCircle /> Knowledge and content updates</li>
-                  <li><CheckCircle /> Embed support and maintenance</li>
-                  <li><CheckCircle /> Priority technical assistance</li>
+                  <li><CheckCircle /> Client-specific assistant configuration</li>
+                  <li><CheckCircle /> Ongoing knowledge and content updates</li>
+                  <li><CheckCircle /> Multi-client embed support and maintenance</li>
+                  <li><CheckCircle /> Priority technical assistance for your team</li>
                 </ul>
-                <Link href="/dashboard" onClick={startWorkspace} className="button-secondary">Explore managed plans</Link>
+                <Link href="/dashboard" onClick={startWorkspace} className="button-secondary">Manage client deployments</Link>
               </article>
               <article className="pricing-card featured">
                 <span className="plan-label">Full ownership</span>
-                <h3>Ownership Handover</h3>
-                <p>One payment for a complete, self-hostable handover bundle.</p>
+                <h3>Client Ownership Handover</h3>
+                <p>Give clients a complete, self-hostable handover bundle when they need to own the deployment.</p>
                 <div className="price"><strong>$2,499</strong><span>one-time</span></div>
                 <ul className="tick-list">
                   <li><CheckCircle /> Complete source-code package</li>
-                  <li><CheckCircle /> Database export and widget code</li>
+                  <li><CheckCircle /> Database export and branded widget code</li>
                   <li><CheckCircle /> Deployment documentation</li>
-                  <li><CheckCircle /> No future platform fee</li>
+                  <li><CheckCircle /> No future platform fee for the client</li>
                 </ul>
-                <Link href="/dashboard" onClick={startWorkspace} className="button-primary">View ownership option <ArrowRight size={15} /></Link>
+                <Link href="/dashboard" onClick={startWorkspace} className="button-primary">Offer the ownership option <ArrowRight size={15} /></Link>
               </article>
             </div>
           </div>
@@ -269,8 +269,8 @@ export default function LandingPage() {
         <section id="faq" className="section">
           <div className="marketing-container">
             <div className="section-heading">
-              <span className="eyebrow">Questions, answered</span>
-              <h2>Everything you need to know</h2>
+              <span className="eyebrow">Agency questions, answered</span>
+              <h2>Everything you need to deliver</h2>
             </div>
             <div className="faq-list">
               {faqs.map((faq, index) => {
@@ -295,16 +295,16 @@ export default function LandingPage() {
 
         <section className="bottom-cta">
           <div className="marketing-container">
-            <h2>Make every customer conversation count.</h2>
-            <p>Build an assistant your team can trust—and your visitors will want to talk to.</p>
-            <Link href="/dashboard" onClick={startWorkspace} className="button-primary">Start building for free <ArrowRight size={16} /></Link>
+            <h2>Make every client conversation count.</h2>
+            <p>Build a chatbot business your team can scale—and your clients will be proud to put in front of customers.</p>
+            <Link href="/dashboard" onClick={startWorkspace} className="button-primary">Start your agency workspace <ArrowRight size={16} /></Link>
           </div>
         </section>
       </main>
 
       <footer className="site-footer">
         <div className="marketing-container footer-content">
-          <span>© 2026 ChatFlow. AI customer conversations, made clear.</span>
+          <span>© 2026 ChatFlow. The AI chatbot platform for agencies.</span>
           <div className="footer-links"><a href="#features">Product</a><a href="#pricing">Pricing</a><Link href="/login">Log in</Link></div>
         </div>
       </footer>
