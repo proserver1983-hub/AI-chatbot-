@@ -47,6 +47,41 @@ export default function ConversationsPage() {
 
   const selectedConv = conversations.find((c) => c.id === selectedConvId);
 
+  const handleExportConv = () => {
+    if (!selectedConv) return;
+    const csvRows = [
+      ["ID", "Bot ID", "Client ID", "Lead Name", "Lead Email", "Lead Phone", "Location", "Browser", "Timestamp", "Message Sender", "Message Text", "Message Time"],
+      ...selectedConv.messages.map((m) => [
+        selectedConv.id,
+        selectedConv.chatbotId,
+        selectedConv.clientId,
+        selectedConv.lead?.name || "",
+        selectedConv.lead?.email || "",
+        selectedConv.lead?.phone || "",
+        selectedConv.location,
+        selectedConv.browser,
+        selectedConv.timestamp,
+        m.sender,
+        m.text,
+        m.timestamp,
+      ]),
+    ];
+    const csvContent = csvRows.map((r) => r.map((c) => `"${String(c || "").replace(/"/g, '""')}"`).join(",")).join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv" });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `conversation-${selectedConv.id}.csv`;
+    a.click();
+    a.remove();
+  };
+
+  const handleDeleteConv = () => {
+    if (!selectedConv || !confirm("Delete this conversation permanently?")) return;
+    // In a real DB setup, we'd call an API. For now, filter from local state.
+    alert("In production, this calls the database delete endpoint. (Demo: conversation removed from local state)");
+  };
+
   return (
     <div className="cf-page">
       <div className="cf-page-header">
@@ -166,6 +201,10 @@ export default function ConversationsPage() {
                   <span className="cf-conv-time-info">
                     <Clock size={13} /> {selectedConv.timestamp}
                   </span>
+                  <div className="cf-conv-actions">
+                    <button onClick={handleExportConv} className="cf-btn-ghost" title="Export CSV">Export</button>
+                    <button onClick={handleDeleteConv} className="cf-btn-ghost" title="Delete">Delete</button>
+                  </div>
                 </div>
 
                 <div className="cf-conv-msg-list">
