@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
   try {
-    const { message, chatbotId, businessInfo, faqs, personality } = await request.json();
+    const { message, businessInfo, faqs, personality } = await request.json();
 
     if (!message) {
       return NextResponse.json({ error: "Message is required" }, { status: 400 });
@@ -126,7 +126,6 @@ INSTRUCTIONS:
     }
 
     // 4. Fallback: Intelligent Simulated Chat Engine
-    // Let's create a beautiful, context-aware rule solver
     const lowerMessage = message.toLowerCase();
     let replyText = "";
 
@@ -150,7 +149,7 @@ INSTRUCTIONS:
       } else if (lowerMessage.includes("support") || lowerMessage.includes("help") || lowerMessage.includes("contact")) {
         replyText = `We are here to help! Please leave your email address and your core query, and we will get back to you within 2 hours. Our office works around the clock to ensure your AI chatbot operates beautifully!`;
       } else if (lowerMessage.includes("ownership") || lowerMessage.includes("transfer") || lowerMessage.includes("source code")) {
-        replyText = `We offer a complete Full Ownership Transfer plan. For a one-time fee, we package the Next.js frontend, Node/SaaS backend API code, full widget script, custom SQL export of your knowledge and settings, plus official developer setup agreements and PDFs. Click the Handover Center on your admin dashboard to generate yours!`;
+        replyText = `We offer a complete Full Ownership Transfer plan.For a one-time fee, we package the Next.js frontend, Node/SaaS backend API code, full widget script, custom SQL export of your knowledge and settings, plus official developer setup agreements and PDFs. Click the Handover Center on your admin dashboard to generate yours!`;
       } else {
         replyText = `That's an excellent question! Based on our trained knowledge base, we specialize in high-impact conversational AI. ${
           businessInfo ? businessInfo.substring(0, Math.min(businessInfo.length, 250)) + "..." : "We enable businesses to train models on custom PDFs, documents, FAQs, and URLs to resolve support issues in real-time."
@@ -158,7 +157,6 @@ INSTRUCTIONS:
       }
     }
 
-    // Return mock answer with simulated typing delay (handled by client, but returned immediately from API)
     return NextResponse.json({
       reply: replyText,
       engine: "ChatFlow Neural-Simulated Engine",

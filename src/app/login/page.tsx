@@ -6,7 +6,6 @@ import Link from "next/link";
 import { useStore } from "@/lib/store";
 import { 
   Bot, 
-  Sparkles, 
   Mail, 
   Lock, 
   User, 
@@ -20,7 +19,6 @@ export default function LoginPage() {
   const router = useRouter();
   const { clients, setCurrentUser } = useStore();
 
-  // Form states
   const [isSignUp, setIsSignUp] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -43,7 +41,6 @@ export default function LoginPage() {
           return;
         }
 
-        // Mock sign up
         const newClient = {
           id: "client-" + Math.random().toString(36).substring(2, 9),
           name,
@@ -60,18 +57,15 @@ export default function LoginPage() {
           }
         };
 
-        // We can save client via custom logic or just inject it
         setCurrentUser(newClient);
         router.push("/dashboard");
       } else {
-        // Mock Login
         if (!email) {
           setError("Please provide your email address.");
           setLoading(false);
           return;
         }
 
-        // Find existing mock client
         const matched = clients.find(c => c.email.toLowerCase() === email.toLowerCase());
         if (matched) {
           setCurrentUser(matched);
@@ -81,7 +75,6 @@ export default function LoginPage() {
             router.push("/dashboard");
           }
         } else {
-          // Fallback create client for easy demo
           const customClient = {
             id: "client-custom",
             name: email.split("@")[0].toUpperCase(),
@@ -105,7 +98,6 @@ export default function LoginPage() {
     }, 800);
   };
 
-  // Quick Demo logins helper
   const handleQuickLogin = (role: 'client-apex' | 'client-luxe' | 'admin') => {
     let matched;
     if (role === 'client-apex') {
@@ -128,7 +120,6 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-center items-center p-6 relative dark-gradient-bg">
-      {/* Decorative glows */}
       <div className="absolute top-1/4 left-1/3 w-[300px] h-[300px] bg-indigo-500/10 rounded-full blur-[80px]" />
       <div className="absolute bottom-1/4 right-1/3 w-[350px] h-[300px] bg-pink-500/10 rounded-full blur-[80px]" />
 
@@ -143,7 +134,6 @@ export default function LoginPage() {
       </Link>
 
       <div className="w-full max-w-md">
-        {/* Main Auth Card */}
         <div className="glass-card p-8 border-slate-800 bg-slate-900/60 shadow-2xl">
           <div className="text-center mb-6">
             <h2 className="text-2xl font-extrabold text-white">
@@ -255,7 +245,6 @@ export default function LoginPage() {
             </button>
           </form>
 
-          {/* Toggle link */}
           <div className="text-center mt-6 text-xs text-slate-400 border-t border-slate-800/80 pt-4">
             {isSignUp ? "Already have a platform workspace?" : "Need a professional AI chatbot?"}{" "}
             <button 
@@ -267,7 +256,6 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {/* High-Fidelity Quick Demo Logins Container */}
         <div className="glass-card mt-6 p-5 border-slate-800 bg-slate-900/40 text-center">
           <span className="text-[10px] font-black text-pink-400 uppercase tracking-widest bg-pink-500/10 px-2 py-0.5 rounded-full">
             QUICK DEMO ACCELERATORS

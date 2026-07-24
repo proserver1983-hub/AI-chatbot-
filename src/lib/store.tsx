@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState } from "react";
 
 // Types
 export interface ClientProfile {
@@ -282,35 +282,49 @@ interface StoreContextType {
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
 
 export function StoreProvider({ children }: { children: React.ReactNode }) {
-  const [clients, setClients] = useState<ClientProfile[]>(INITIAL_CLIENTS);
-  const [chatbots, setChatbots] = useState<Chatbot[]>(INITIAL_CHATBOTS);
-  const [conversations, setConversations] = useState<Conversation[]>(INITIAL_CONVERSATIONS);
-  const [currentUser, setCurrentUserState] = useState<ClientProfile | null>(null);
-  const [activeChatbotId, setActiveChatbotId] = useState<string | null>(null);
-
-  // Load from local storage if existing
-  useEffect(() => {
+  const [clients, setClients] = useState<ClientProfile[]>(() => {
     if (typeof window !== "undefined") {
-      const storedClients = localStorage.getItem("chatflow_clients");
-      const storedChatbots = localStorage.getItem("chatflow_chatbots");
-      const storedConversations = localStorage.getItem("chatflow_conversations");
-      const storedUser = localStorage.getItem("chatflow_user");
-
-      if (storedClients) setClients(JSON.parse(storedClients));
-      if (storedChatbots) {
-        const parsed = JSON.parse(storedChatbots);
-        setChatbots(parsed);
-      }
-      if (storedConversations) setConversations(JSON.parse(storedConversations));
-      if (storedUser) {
-        const parsedUser = JSON.parse(storedUser);
-        setCurrentUserState(parsedUser);
-      } else {
-        // Default to client-apex for instant visual premium onboarding
-        setCurrentUserState(INITIAL_CLIENTS[0]);
-      }
+      const stored = localStorage.getItem("chatflow_clients");
+      if (stored) return JSON.parse(stored);
     }
-  }, []);
+    return INITIAL_CLIENTS;
+  });
+
+  const [chatbots, setChatbots] = useState<Chatbot[]>(() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("chatflow_chatbots");
+      if (stored) return JSON.parse(stored);
+    }
+    return INITIAL_CHATBOTS;
+  });
+
+  const [conversations, setConversations] = useState<Conversation[]>(() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("chatflow_conversations");
+      if (stored) return JSON.parse(stored);
+    }
+    return INITIAL_CONVERSATIONS;
+  });
+
+  const [currentUser, setCurrentUserState] = useState<ClientProfile | null>(() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("chatflow_user");
+      if (stored) return JSON.parse(stored);
+    }
+    return INITIAL_CLIENTS[0];
+  });
+
+  const [activeChatbotId, setActiveChatbotId] = useState<string | null>(() => {
+    if (typeof window !== "undefined") {
+      const storedUser = localStorage.getItem("chatflow_user");
+      const user = storedUser ? JSON.parse(storedUser) : INITIAL_CLIENTS[0];
+      const storedBots = localStorage.getItem("chatflow_chatbots");
+      const bots = storedBots ? JSON.parse(storedBots) : INITIAL_CHATBOTS;
+      const userBot = bots.find((b: Chatbot) => b.clientId === user?.id);
+      return userBot ? userBot.id : (bots[0]?.id || null);
+    }
+    return INITIAL_CHATBOTS[0]?.id || null;
+  });
 
   // Sync to local storage
   const syncClients = (newClients: ClientProfile[]) => {
@@ -351,16 +365,6 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       setActiveChatbotId(null);
     }
   };
-
-  // Keep activeChatbotId updated if the active user changes or activeChatbotId is null
-  useEffect(() => {
-    if (currentUser && !activeChatbotId) {
-      const userBot = chatbots.find(b => b.clientId === currentUser.id);
-      if (userBot) {
-        setActiveChatbotId(userBot.id);
-      }
-    }
-  }, [currentUser, chatbots, activeChatbotId]);
 
   const updateClientProfile = (clientId: string, updates: Partial<ClientProfile>) => {
     const updated = clients.map(c => c.id === clientId ? { ...c, ...updates } : c);
@@ -531,7 +535,6 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     let updatedMessages = [...conv.messages, userMsg];
 
     // Check if the user message contains contact info (lead capture)
-    // Basic regex or direct match pattern
     let leadUpdated = conv.lead;
     const emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
     const phoneRegex = /(\+?\d{1,4}[-.\s]??)?(\(?\d{2,3}\)?[-.\s]??)?\d{3,4}[-.\s]??\d{4}/g;
@@ -544,7 +547,6 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       const phone = phones ? phones[0] : (leadUpdated?.phone || "");
       const words = text.split(/[\s,]+/);
       let name = leadUpdated?.name || "";
-      // Grab potential name (first two capitalized words that are not email or phone)
       if (!name) {
         const potentialName = words.filter(w => w && w[0] === w[0]?.toUpperCase() && !w.includes("@") && isNaN(Number(w)));
         if (potentialName.length > 0) {
@@ -580,7 +582,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     } catch {
       // Local fallback answering engine matching FAQs or business info
       const lowerMsg = text.toLowerCase();
-      let matchedFaq = bot.faqs.find(f => lowerMsg.includes(f.question.toLowerCase()) || f.question.toLowerCase().split(" ").every(word => word.length < 3 || lowerMsg.includes(word)));
+      const matchedFaq = bot.faqs.find(f => lowerMsg.includes(f.question.toLowerCase()) || f.question.toLowerCase().split(" ").every(word => word.length < 3 || lowerMsg.includes(word)));
       
       if (matchedFaq) {
         botReplyText = matchedFaq.answer;

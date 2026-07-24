@@ -3,23 +3,20 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { useStore, Chatbot, ClientProfile } from "@/lib/store";
+import { useStore, Chatbot } from "@/lib/store";
 import { 
   Bot, 
-  Sparkles, 
   Database, 
   Code, 
   FileText, 
   MessageSquare, 
   Sliders, 
   LineChart, 
-  Settings, 
   Download, 
   Wrench, 
   CheckCircle, 
   Users, 
   LogOut, 
-  ArrowRight, 
   Plus, 
   Trash2, 
   Send, 
@@ -34,10 +31,425 @@ import {
   Lock,
   Search,
   Check,
-  MoreHorizontal,
   Pencil,
   Copy
 } from "lucide-react";
+
+interface BotBuilderFormProps {
+  bot: Chatbot;
+  onSave: (data: { name: string; avatar: string; brandColor: string; welcomeMessage: string; personality: string; language: string; businessInfo: string }) => void;
+}
+
+function BotBuilderForm({ bot, onSave }: BotBuilderFormProps) {
+  const [botName, setBotName] = useState(bot.name);
+  const [botAvatar, setBotAvatar] = useState(bot.avatar);
+  const [botBrandColor, setBotBrandColor] = useState(bot.brandColor);
+  const [botWelcomeMessage, setBotWelcomeMessage] = useState(bot.welcomeMessage);
+  const [botPersonality, setBotPersonality] = useState(bot.personality);
+  const [botLanguage, setBotLanguage] = useState(bot.language);
+  const [botBusinessInfo] = useState(bot.businessInfo);
+
+  const [previewMsg, setPreviewMsg] = useState("");
+  const [previewChatHistory, setPreviewHistory] = useState<Array<{ sender: "user" | "bot"; text: string; timestamp: string }>>([
+    {
+      sender: "bot",
+      text: bot.welcomeMessage,
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    }
+  ]);
+  const [previewLoading, setPreviewLoading] = useState(false);
+  const [previewConvId, setPreviewConvId] = useState<string | undefined>(undefined);
+  const { sendMessage } = useStore();
+
+  const handleSendPreview = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!previewMsg) return;
+    const text = previewMsg;
+    setPreviewMsg("");
+    const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    setPreviewHistory(prev => [...prev, { sender: "user", text, timestamp }]);
+    setPreviewLoading(true);
+    try {
+      const res = await sendMessage(bot.id, text, previewConvId);
+      setPreviewHistory(prev => [...prev, { sender: "bot", text: res.reply, timestamp }]);
+      setPreviewConvId(res.conversationId);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setPreviewLoading(false);
+    }
+  };
+
+  return (
+    <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 animate-fade-in">
+      <div className="glass-card border-slate-800 p-6 space-y-6">
+        <div className="border-b border-slate-850 pb-4">
+          <h3 className="font-extrabold text-white text-base">Appearance & System Identity</h3>
+          <p className="text-slate-500 text-xs mt-1">Configure brand alignments, welcome triggers, and AI response style guidelines.</p>
+        </div>
+
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1">
+              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Chatbot Name</label>
+              <input 
+                type="text" 
+                value={botName}
+                onChange={(e) => setBotName(e.target.value)}
+                className="w-full px-3 py-2.5 rounded-lg text-xs glass-input"
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Avatar Emoji</label>
+              <select 
+                value={botAvatar}
+                onChange={(e) => setBotAvatar(e.target.value)}
+                className="w-full p-2.5 rounded-lg text-xs bg-slate-950 border border-slate-800/80 text-white cursor-pointer focus:outline-none focus:border-indigo-500"
+              >
+                <option value="🤖">🤖 Robot</option>
+                <option value="✨">✨ sparkle</option>
+                <option value="💬">💬 Chat</option>
+                <option value="👑">👑 Luxury Crown</option>
+                <option value="💡">💡 Idea Bulb</option>
+                <option value="⚡">⚡ Bolt</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1">
+              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Language</label>
+              <select 
+                value={botLanguage}
+                onChange={(e) => setBotLanguage(e.target.value)}
+                className="w-full p-2.5 rounded-lg text-xs bg-slate-950 border border-slate-800/80 text-white cursor-pointer focus:outline-none focus:border-indigo-500"
+              >
+                <option value="English">English</option>
+                <option value="Spanish">Spanish (Español)</option>
+                <option value="French">French (Français)</option>
+                <option value="German">German (Deutsch)</option>
+              </select>
+            </div>
+            <div className="space-y-1">
+              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Brand Hex Color</label>
+              <div className="flex gap-2">
+                <input 
+                  type="color" 
+                  value={botBrandColor}
+                  onChange={(e) => setBotBrandColor(e.target.value)}
+                  className="w-10 h-10 p-1 border-0 bg-transparent rounded cursor-pointer"
+                />
+                <input 
+                  type="text" 
+                  value={botBrandColor}
+                  onChange={(e) => setBotBrandColor(e.target.value)}
+                  className="flex-1 px-3 py-2.5 rounded-lg text-xs font-mono glass-input"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Initial Welcome Greeting</label>
+            <textarea 
+              rows={3}
+              value={botWelcomeMessage}
+              onChange={(e) => setBotWelcomeMessage(e.target.value)}
+              className="w-full px-3 py-2 rounded-lg text-xs glass-input"
+            />
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">System AI Personality instructions</label>
+            <textarea 
+              rows={4}
+              value={botPersonality}
+              onChange={(e) => setBotPersonality(e.target.value)}
+              className="w-full px-3 py-2 rounded-lg text-xs glass-input"
+              placeholder="Instruct the bot on how to answer, tone details, and guidelines..."
+            />
+          </div>
+
+          <button 
+            onClick={() => onSave({ name: botName, avatar: botAvatar, brandColor: botBrandColor, welcomeMessage: botWelcomeMessage, personality: botPersonality, language: botLanguage, businessInfo: botBusinessInfo })}
+            className="w-full py-3.5 rounded-xl font-bold text-white premium-gradient hover:opacity-95 transition-all text-xs flex items-center justify-center gap-2 glow-btn"
+          >
+            Save Appearance Settings
+          </button>
+        </div>
+      </div>
+
+      <div className="glass-card border-slate-800 p-6 flex flex-col h-[560px]">
+        <div className="border-b border-slate-850 pb-4 mb-4 flex items-center justify-between shrink-0">
+          <div>
+            <h3 className="font-extrabold text-white text-base">Real-Time Assistant Sandbox</h3>
+            <p className="text-slate-500 text-xs">Verify your visual parameters and prompt responses live.</p>
+          </div>
+          <span className="text-[10px] bg-slate-900 border border-slate-800 text-indigo-400 font-bold px-2.5 py-1 rounded">Sandbox Mode</span>
+        </div>
+
+        <div className="flex-1 flex flex-col bg-slate-950 border border-slate-850 rounded-xl overflow-hidden shadow-xl max-w-[380px] mx-auto w-full relative">
+          <div 
+            style={{ background: `linear-gradient(135deg, ${botBrandColor} 0%, rgba(13,17,23,0.95) 100%)` }}
+            className="p-4 flex items-center gap-3 text-white border-b border-white/5"
+          >
+            <div className="w-9 h-9 bg-white/10 rounded-full flex items-center justify-center text-lg">{botAvatar}</div>
+            <div>
+              <h4 className="font-bold text-xs">{botName}</h4>
+              <div className="flex items-center gap-1 text-[9px] text-emerald-400 mt-0.5 font-bold">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 block animate-pulse" /> Active Online
+              </div>
+            </div>
+          </div>
+
+          <div className="flex-1 p-4 overflow-y-auto space-y-3.5 bg-[#090d12] text-xs">
+            {previewChatHistory.map((m, idx) => (
+              <div key={idx} className={`flex ${m.sender === 'user' ? 'justify-end' : ''}`}>
+                <div 
+                  style={m.sender === 'user' ? { backgroundColor: botBrandColor } : {}}
+                  className={`max-w-[80%] px-3.5 py-2.5 rounded-xl leading-relaxed ${m.sender === 'user' ? 'text-white' : 'bg-[#1f2937] text-slate-200'}`}
+                >
+                  {m.text}
+                </div>
+              </div>
+            ))}
+            {previewLoading && (
+              <div className="flex">
+                <div className="bg-[#1f2937] text-slate-400 max-w-[80%] px-3.5 py-2 rounded-xl flex items-center gap-1 text-[10px]">
+                  <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" />
+                  <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce [animation-delay:0.2s]" />
+                  <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce [animation-delay:0.4s]" />
+                </div>
+              </div>
+            )}
+          </div>
+
+          <form onSubmit={handleSendPreview} className="p-3 bg-[#0d1117] border-t border-slate-900 flex gap-2">
+            <input 
+              type="text" 
+              placeholder="Ask anything..." 
+              value={previewMsg}
+              onChange={(e) => setPreviewMsg(e.target.value)}
+              className="flex-1 bg-[#161b22] text-xs text-white border border-slate-800 rounded-lg px-3 py-2.5 outline-none focus:border-indigo-500"
+            />
+            <button 
+              type="submit" 
+              style={{ backgroundColor: botBrandColor }}
+              className="w-9 h-9 flex items-center justify-center rounded-lg text-white font-bold transition-all shrink-0 hover:opacity-90"
+            >
+              <Send className="w-4 h-4" />
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+interface KnowledgeTabContentProps {
+  bot: Chatbot;
+  onSyncBusinessInfo: (info: string) => void;
+}
+
+function KnowledgeTabContent({ bot, onSyncBusinessInfo }: KnowledgeTabContentProps) {
+  const [businessInfo, setBusinessInfo] = useState(bot.businessInfo);
+  const [faqQ, setFaqQ] = useState("");
+  const [faqA, setFaqA] = useState("");
+  const [urlInput, setUrlInput] = useState("");
+  const [pdfName, setPdfName] = useState("");
+  const { addFAQ, deleteFAQ, addURL, deleteURL, addPDF, deletePDF } = useStore();
+
+  const handleAddFaq = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!faqQ || !faqA) return;
+    addFAQ(bot.id, faqQ, faqA);
+    setFaqQ("");
+    setFaqA("");
+  };
+
+  const handleAddUrl = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!urlInput) return;
+    addURL(bot.id, urlInput);
+    setUrlInput("");
+  };
+
+  const handleAddPdf = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!pdfName) return;
+    addPDF(bot.id, pdfName, "1.5 MB");
+    setPdfName("");
+  };
+
+  return (
+    <div className="space-y-8 animate-fade-in">
+      <div className="glass-card p-6 border-slate-800 bg-slate-900/40">
+        <div className="border-b border-slate-850 pb-4 mb-4">
+          <h3 className="font-extrabold text-white text-base">Corporate Knowledge Grounding</h3>
+          <p className="text-slate-500 text-xs mt-1">This context acts as the primary knowledge ceiling for custom AI completions, ensuring the chatbot doesn&apos;t hallucinate about services.</p>
+        </div>
+        <div className="space-y-4">
+          <div className="space-y-1">
+            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">General Corporate & Business Information</label>
+            <textarea 
+              rows={5}
+              value={businessInfo}
+              onChange={(e) => setBusinessInfo(e.target.value)}
+              className="w-full px-3 py-2 rounded-lg text-xs glass-input"
+              placeholder="Type details about pricing, address, policies, packages, support timelines, products..."
+            />
+          </div>
+          <div className="flex justify-end">
+            <button 
+              onClick={() => {
+                onSyncBusinessInfo(businessInfo);
+                alert("Corporate base knowledge updated!");
+              }}
+              className="px-5 py-2.5 rounded-lg text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 transition-all shadow-md shadow-indigo-600/10"
+            >
+              Sync Business Info
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+        <div className="glass-card border-slate-800 flex flex-col h-[400px]">
+          <div className="p-5 border-b border-slate-850 shrink-0">
+            <h3 className="font-bold text-white text-sm flex items-center gap-2">
+              <FileText className="w-4 h-4 text-pink-400" /> Upload PDF Manuals
+            </h3>
+          </div>
+          <div className="flex-1 p-5 overflow-y-auto space-y-3">
+            {bot.pdfs.length === 0 ? (
+              <div className="text-center py-12 text-slate-500 text-xs">No corporate manuals added yet.</div>
+            ) : (
+              bot.pdfs.map(p => (
+                <div key={p.id} className="p-3 bg-slate-950/60 border border-slate-850 rounded-lg flex items-center justify-between text-xs">
+                  <div className="min-w-0">
+                    <p className="font-semibold text-white truncate">{p.name}</p>
+                    <p className="text-[10px] text-slate-500">{p.size} • {p.status}</p>
+                  </div>
+                  <button 
+                    onClick={() => deletePDF(bot.id, p.id)}
+                    className="p-1.5 text-slate-500 hover:text-rose-400 rounded hover:bg-rose-500/10 shrink-0"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              ))
+            )}
+          </div>
+          <form onSubmit={handleAddPdf} className="p-4 bg-slate-900/60 border-t border-slate-850 flex gap-2 shrink-0">
+            <input 
+              type="text" 
+              placeholder="Manual_Specifications.pdf"
+              value={pdfName}
+              onChange={(e) => setPdfName(e.target.value)}
+              className="flex-1 px-3 py-2 rounded text-xs bg-slate-950 border border-slate-800 text-white outline-none"
+              required
+            />
+            <button className="px-3 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded text-xs font-bold transition-all shrink-0">
+              Add
+            </button>
+          </form>
+        </div>
+
+        <div className="glass-card border-slate-800 flex flex-col h-[400px]">
+          <div className="p-5 border-b border-slate-850 shrink-0">
+            <h3 className="font-bold text-white text-sm flex items-center gap-2">
+              <Globe className="w-4 h-4 text-indigo-400" /> Crawl Website URLs
+            </h3>
+          </div>
+          <div className="flex-1 p-5 overflow-y-auto space-y-3">
+            {bot.urls.length === 0 ? (
+              <div className="text-center py-12 text-slate-500 text-xs">No website links scraped yet.</div>
+            ) : (
+              bot.urls.map(u => (
+                <div key={u.id} className="p-3 bg-slate-950/60 border border-slate-850 rounded-lg flex items-center justify-between text-xs">
+                  <p className="font-mono text-slate-300 truncate min-w-0 mr-3">{u.url}</p>
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <span className="text-[9px] text-emerald-400 font-bold bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/10">Crawled</span>
+                    <button 
+                      onClick={() => deleteURL(bot.id, u.id)}
+                      className="p-1.5 text-slate-500 hover:text-rose-400 rounded hover:bg-rose-500/10"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+          <form onSubmit={handleAddUrl} className="p-4 bg-slate-900/60 border-t border-slate-850 flex gap-2 shrink-0">
+            <input 
+              type="url" 
+              placeholder="https://company.io/docs"
+              value={urlInput}
+              onChange={(e) => setUrlInput(e.target.value)}
+              className="flex-1 px-3 py-2 rounded text-xs bg-slate-950 border border-slate-800 text-white outline-none"
+              required
+            />
+            <button className="px-3 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded text-xs font-bold transition-all shrink-0">
+              Scrape
+            </button>
+          </form>
+        </div>
+
+        <div className="glass-card border-slate-800 flex flex-col h-[400px]">
+          <div className="p-5 border-b border-slate-850 shrink-0">
+            <h3 className="font-bold text-white text-sm flex items-center gap-2">
+              <MessageSquare className="w-4 h-4 text-emerald-400" /> Standard Q&A FAQs
+            </h3>
+          </div>
+          <div className="flex-1 p-5 overflow-y-auto space-y-3">
+            {bot.faqs.length === 0 ? (
+              <div className="text-center py-12 text-slate-500 text-xs">No manual FAQs created. Add some below!</div>
+            ) : (
+              bot.faqs.map(f => (
+                <div key={f.id} className="p-3 bg-slate-950/60 border border-slate-850 rounded-lg space-y-1.5 text-xs">
+                  <div className="flex items-center justify-between">
+                    <p className="font-bold text-white truncate pr-2">Q: {f.question}</p>
+                    <button 
+                      onClick={() => deleteFAQ(bot.id, f.id)}
+                      className="p-1 text-slate-500 hover:text-rose-400 rounded hover:bg-rose-500/10 shrink-0"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                  <p className="text-slate-400 text-[11px] leading-relaxed">A: {f.answer}</p>
+                </div>
+              ))
+            )}
+          </div>
+          <form onSubmit={handleAddFaq} className="p-4 bg-slate-900/60 border-t border-slate-850 space-y-2 shrink-0">
+            <input 
+              type="text" 
+              placeholder="Question (e.g. Return policy?)"
+              value={faqQ}
+              onChange={(e) => setFaqQ(e.target.value)}
+              className="w-full px-3 py-1.5 rounded text-xs bg-slate-950 border border-slate-800 text-white outline-none"
+              required
+            />
+            <div className="flex gap-2">
+              <input 
+                type="text" 
+                placeholder="Answer text..."
+                value={faqA}
+                onChange={(e) => setFaqA(e.target.value)}
+                className="flex-1 px-3 py-1.5 rounded text-xs bg-slate-950 border border-slate-800 text-white outline-none"
+                required
+              />
+              <button className="px-4 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded text-xs font-bold transition-all shrink-0">
+                Save FAQ
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -54,57 +466,26 @@ export default function DashboardPage() {
     duplicateChatbot,
     deleteChatbot,
     updateChatbotSettings,
-    addFAQ,
-    deleteFAQ,
-    addURL,
-    deleteURL,
-    addPDF,
-    deletePDF,
-    sendMessage,
     updateClientProfile
   } = store;
 
   const currentUser = rawCurrentUser!;
 
-  // Tabs structure
   type TabId = "overview" | "builder" | "knowledge" | "widget" | "analytics" | "subscription" | "handover";
   const [activeTab, setActiveTab] = useState<TabId>("overview");
   
-  // Navigation Mobile menu
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // Form states for adding items
   const [newBotName, setNewBotName] = useState("");
   const [botSearch, setBotSearch] = useState("");
-  const [faqQ, setFaqQ] = useState("");
-  const [faqA, setFaqA] = useState("");
-  const [urlInput, setUrlInput] = useState("");
-  const [pdfName, setPdfName] = useState("");
-  const [pdfSize, setPdfSize] = useState("1.5 MB");
 
-  // Local state for chatbot builder parameters (synchronized to store when saved)
-  const [botName, setBotName] = useState("");
-  const [botAvatar, setBotAvatar] = useState("🤖");
-  const [botBrandColor, setBotBrandColor] = useState("#6366f1");
-  const [botWelcomeMessage, setBotWelcomeMessage] = useState("");
-  const [botPersonality, setBotPersonality] = useState("");
-  const [botLanguage, setBotLanguage] = useState("English");
-  const [botBusinessInfo, setBotBusinessInfo] = useState("");
+  const activeBot = chatbots.find(b => b.id === activeChatbotId);
 
-  // Widget preview interactive simulation states
-  const [previewMsg, setPreviewMsg] = useState("");
-  const [previewChatHistory, setPreviewHistory] = useState<Array<{ sender: "user" | "bot"; text: string; timestamp: string }>>([]);
-  const [previewLoading, setPreviewLoading] = useState(false);
-  const [previewConvId, setPreviewConvId] = useState<string | undefined>(undefined);
-
-  // Clipboard copy feedback
   const [copied, setCopied] = useState(false);
 
-  // Ownership Handover status
   const [packagingHandover, setPackagingHandover] = useState(false);
   const [handoverSuccess, setHandoverSuccess] = useState(false);
 
-  // Safeguard: Redirect if not logged in
   useEffect(() => {
     if (typeof window !== "undefined") {
       const storedUser = localStorage.getItem("chatflow_user");
@@ -113,30 +494,6 @@ export default function DashboardPage() {
       }
     }
   }, [currentUser, router]);
-
-  // Sync builder states when active chatbot updates
-  const activeBot = chatbots.find(b => b.id === activeChatbotId);
-  useEffect(() => {
-    if (activeBot) {
-      setBotName(activeBot.name);
-      setBotAvatar(activeBot.avatar);
-      setBotBrandColor(activeBot.brandColor);
-      setBotWelcomeMessage(activeBot.welcomeMessage);
-      setBotPersonality(activeBot.personality);
-      setBotLanguage(activeBot.language);
-      setBotBusinessInfo(activeBot.businessInfo);
-      
-      // Reset preview chat history
-      setPreviewHistory([
-        {
-          sender: "bot",
-          text: activeBot.welcomeMessage,
-          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        }
-      ]);
-      setPreviewConvId(undefined);
-    }
-  }, [activeChatbotId, activeBot]);
 
   if (!currentUser) {
     return (
@@ -149,86 +506,14 @@ export default function DashboardPage() {
     );
   }
 
-  // Statistics filters
   const clientBots = chatbots.filter(b => b.clientId === currentUser.id);
-  const clientBotIds = clientBots.map(b => b.id);
-  const clientConversations = conversations.filter(c => clientBotIds.includes(c.chatbotId));
-  const totalLeads = clientConversations.filter(c => c.lead !== null).map(c => c.lead);
-  
-  let totalMsgCount = 0;
-  clientConversations.forEach(c => {
-    totalMsgCount += c.messages.length;
-  });
 
-  // Handle building saves
-  const handleSaveBuilder = () => {
-    if (!activeChatbotId) return;
-    updateChatbotSettings(activeChatbotId, {
-      name: botName,
-      avatar: botAvatar,
-      brandColor: botBrandColor,
-      welcomeMessage: botWelcomeMessage,
-      personality: botPersonality,
-      language: botLanguage,
-      businessInfo: botBusinessInfo
-    });
-    alert("Chatbot settings updated successfully!");
-  };
-
-  // Add training materials handlers
-  const handleAddFaq = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!activeChatbotId || !faqQ || !faqA) return;
-    addFAQ(activeChatbotId, faqQ, faqA);
-    setFaqQ("");
-    setFaqA("");
-  };
-
-  const handleAddUrl = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!activeChatbotId || !urlInput) return;
-    addURL(activeChatbotId, urlInput);
-    setUrlInput("");
-  };
-
-  const handleAddPdf = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!activeChatbotId || !pdfName) return;
-    addPDF(activeChatbotId, pdfName, pdfSize);
-    setPdfName("");
-  };
-
-  // Handle Widget Preview Messaging
-  const handleSendPreviewMsg = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!previewMsg || !activeChatbotId) return;
-
-    const userText = previewMsg;
-    setPreviewMsg("");
-
-    const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    setPreviewHistory(prev => [...prev, { sender: "user", text: userText, timestamp }]);
-    setPreviewLoading(true);
-
-    try {
-      const response = await sendMessage(activeChatbotId, userText, previewConvId);
-      setPreviewHistory(prev => [...prev, { sender: "bot", text: response.reply, timestamp }]);
-      setPreviewConvId(response.conversationId);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setPreviewLoading(false);
-    }
-  };
-
-  // Handle Clipboard copies
   const handleCopyEmbed = (text: string) => {
     navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
-  // Handle Packaging and downloading Handover ZIP
   const handleTriggerHandover = async () => {
     if (!activeBot) {
       alert("No active chatbot configuration to package.");
@@ -277,7 +562,6 @@ export default function DashboardPage() {
         a.remove();
         setHandoverSuccess(true);
         
-        // Also update subscription status to completed on the local store
         updateClientProfile(currentUser.id, {
           subscription: {
             ...currentUser.subscription,
@@ -310,15 +594,12 @@ export default function DashboardPage() {
     router.push("/");
   };
 
-  // Embed template code
   const embedCodeSnippet = `<script src="${typeof window !== "undefined" ? window.location.origin : "https://chatflow-ai.vercel.app"}/chatflow-widget.js" bot-id="${activeChatbotId || "bot-apex"}"></script>`;
 
   return (
     <div className="min-h-screen flex bg-slate-950 text-slate-100 font-sans">
       
-      {/* 1. SIDEBAR NAVIGATION - DESKTOP */}
       <aside className="hidden lg:flex flex-col w-64 bg-slate-900/60 border-r border-slate-800/80 p-5 shrink-0 select-none">
-        {/* Brand Header */}
         <div className="flex items-center gap-2 mb-8 px-2">
           <div className="w-8 h-8 rounded-lg premium-gradient flex items-center justify-center">
             <Bot className="w-4.5 h-4.5 text-white" />
@@ -329,7 +610,6 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Workspace Quick-Chooser */}
         <div className="mb-6 px-2">
           <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-2">ACTIVE SESSIONS</label>
           <div className="p-3 rounded-xl bg-slate-950 border border-slate-800/80 flex items-center justify-between">
@@ -343,7 +623,6 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Active Chatbot Quick Selector */}
         <div className="mb-6 px-2">
           <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-1.5">ACTIVE CHATBOT</label>
           {clientBots.length === 0 ? (
@@ -361,7 +640,6 @@ export default function DashboardPage() {
           )}
         </div>
 
-        {/* Navigation Tabs */}
         <nav className="flex-1 space-y-1">
           <button 
             onClick={() => setActiveTab("overview")}
@@ -418,7 +696,6 @@ export default function DashboardPage() {
           </button>
         </nav>
 
-        {/* Bottom Panel */}
         <div className="border-t border-slate-800/80 pt-4 space-y-2">
           {currentUser.role === 'admin' && (
             <Link 
@@ -437,7 +714,6 @@ export default function DashboardPage() {
         </div>
       </aside>
 
-      {/* MOBILE HEADER & NAVIGATION */}
       <div className="lg:hidden flex flex-col w-full min-h-screen">
         <header className="glass-card mx-2 my-2 px-4 py-3 flex items-center justify-between border-slate-850">
           <div className="flex items-center gap-2">
@@ -485,7 +761,6 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* DESKTOP CONTENT AREA */}
       <main className="hidden lg:flex flex-col flex-1 min-w-0 overflow-y-auto bg-slate-950 dark-gradient-bg">
         <header className="h-16 border-b border-slate-800/60 px-8 flex items-center justify-between shrink-0 bg-slate-900/10">
           <div className="flex items-center gap-3">
@@ -514,7 +789,6 @@ export default function DashboardPage() {
     </div>
   );
 
-  // Tab router
   function renderTabContent() {
     switch (activeTab) {
       case "overview":
@@ -536,7 +810,6 @@ export default function DashboardPage() {
     }
   }
 
-  // OVERVIEW TAB
   function renderOverviewTab() {
     const query = botSearch;
     const filteredBots = clientBots.filter(b => b.name.toLowerCase().includes(query.toLowerCase()));
@@ -567,376 +840,37 @@ export default function DashboardPage() {
     );
   }
 
-  // BUILDER TAB
   function renderBuilderTab() {
     if (!activeBot) return null;
     return (
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 animate-fade-in">
-        {/* Settings column */}
-        <div className="glass-card border-slate-800 p-6 space-y-6">
-          <div className="border-b border-slate-850 pb-4">
-            <h3 className="font-extrabold text-white text-base">Appearance & System Identity</h3>
-            <p className="text-slate-500 text-xs mt-1">Configure brand alignments, welcome triggers, and AI response style guidelines.</p>
-          </div>
-
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Chatbot Name</label>
-                <input 
-                  type="text" 
-                  value={botName}
-                  onChange={(e) => setBotName(e.target.value)}
-                  className="w-full px-3 py-2.5 rounded-lg text-xs glass-input"
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Avatar Emoji</label>
-                <select 
-                  value={botAvatar}
-                  onChange={(e) => setBotAvatar(e.target.value)}
-                  className="w-full p-2.5 rounded-lg text-xs bg-slate-950 border border-slate-800/80 text-white cursor-pointer focus:outline-none focus:border-indigo-500"
-                >
-                  <option value="🤖">🤖 Robot</option>
-                  <option value="✨">✨ sparkle</option>
-                  <option value="💬">💬 Chat</option>
-                  <option value="👑">👑 Luxury Crown</option>
-                  <option value="💡">💡 Idea Bulb</option>
-                  <option value="⚡">⚡ Bolt</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Language</label>
-                <select 
-                  value={botLanguage}
-                  onChange={(e) => setBotLanguage(e.target.value)}
-                  className="w-full p-2.5 rounded-lg text-xs bg-slate-950 border border-slate-800/80 text-white cursor-pointer focus:outline-none focus:border-indigo-500"
-                >
-                  <option value="English">English</option>
-                  <option value="Spanish">Spanish (Español)</option>
-                  <option value="French">French (Français)</option>
-                  <option value="German">German (Deutsch)</option>
-                </select>
-              </div>
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Brand Hex Color</label>
-                <div className="flex gap-2">
-                  <input 
-                    type="color" 
-                    value={botBrandColor}
-                    onChange={(e) => setBotBrandColor(e.target.value)}
-                    className="w-10 h-10 p-1 border-0 bg-transparent rounded cursor-pointer"
-                  />
-                  <input 
-                    type="text" 
-                    value={botBrandColor}
-                    onChange={(e) => setBotBrandColor(e.target.value)}
-                    className="flex-1 px-3 py-2.5 rounded-lg text-xs font-mono glass-input"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Initial Welcome Greeting</label>
-              <textarea 
-                rows={3}
-                value={botWelcomeMessage}
-                onChange={(e) => setBotWelcomeMessage(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg text-xs glass-input"
-              />
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">System AI Personality instructions</label>
-              <textarea 
-                rows={4}
-                value={botPersonality}
-                onChange={(e) => setBotPersonality(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg text-xs glass-input"
-                placeholder="Instruct the bot on how to answer, tone details, and guidelines..."
-              />
-            </div>
-
-            <button 
-              onClick={handleSaveBuilder}
-              className="w-full py-3.5 rounded-xl font-bold text-white premium-gradient hover:opacity-95 transition-all text-xs flex items-center justify-center gap-2 glow-btn"
-            >
-              Save Appearance Settings
-            </button>
-          </div>
-        </div>
-
-        {/* Live preview visual column */}
-        <div className="glass-card border-slate-800 p-6 flex flex-col h-[560px]">
-          <div className="border-b border-slate-850 pb-4 mb-4 flex items-center justify-between shrink-0">
-            <div>
-              <h3 className="font-extrabold text-white text-base">Real-Time Assistant Sandbox</h3>
-              <p className="text-slate-500 text-xs">Verify your visual parameters and prompt responses live.</p>
-            </div>
-            <span className="text-[10px] bg-slate-900 border border-slate-800 text-indigo-400 font-bold px-2.5 py-1 rounded">Sandbox Mode</span>
-          </div>
-
-          {/* Interactive Simulated Device Widget */}
-          <div className="flex-1 flex flex-col bg-slate-950 border border-slate-850 rounded-xl overflow-hidden shadow-xl max-w-[380px] mx-auto w-full relative">
-            
-            {/* Header matches brand color dynamically */}
-            <div 
-              style={{ background: `linear-gradient(135deg, ${botBrandColor} 0%, rgba(13,17,23,0.95) 100%)` }}
-              className="p-4 flex items-center gap-3 text-white border-b border-white/5"
-            >
-              <div className="w-9 h-9 bg-white/10 rounded-full flex items-center justify-center text-lg">{botAvatar}</div>
-              <div>
-                <h4 className="font-bold text-xs">{botName}</h4>
-                <div className="flex items-center gap-1 text-[9px] text-emerald-400 mt-0.5 font-bold">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 block animate-pulse" /> Active Online
-                </div>
-              </div>
-            </div>
-
-            {/* Simulated chats logs viewport */}
-            <div className="flex-1 p-4 overflow-y-auto space-y-3.5 bg-[#090d12] text-xs">
-              {previewChatHistory.map((m, idx) => (
-                <div key={idx} className={`flex ${m.sender === 'user' ? 'justify-end' : ''}`}>
-                  <div 
-                    style={m.sender === 'user' ? { backgroundColor: botBrandColor } : {}}
-                    className={`max-w-[80%] px-3.5 py-2.5 rounded-xl leading-relaxed ${m.sender === 'user' ? 'text-white' : 'bg-[#1f2937] text-slate-200'}`}
-                  >
-                    {m.text}
-                  </div>
-                </div>
-              ))}
-              {previewLoading && (
-                <div className="flex">
-                  <div className="bg-[#1f2937] text-slate-400 max-w-[80%] px-3.5 py-2 rounded-xl flex items-center gap-1 text-[10px]">
-                    <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" />
-                    <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce [animation-delay:0.2s]" />
-                    <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce [animation-delay:0.4s]" />
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Message input */}
-            <form onSubmit={handleSendPreviewMsg} className="p-3 bg-[#0d1117] border-t border-slate-900 flex gap-2">
-              <input 
-                type="text" 
-                placeholder="Ask anything..." 
-                value={previewMsg}
-                onChange={(e) => setPreviewMsg(e.target.value)}
-                className="flex-1 bg-[#161b22] text-xs text-white border border-slate-800 rounded-lg px-3 py-2.5 outline-none focus:border-indigo-500"
-              />
-              <button 
-                type="submit" 
-                style={{ backgroundColor: botBrandColor }}
-                className="w-9 h-9 flex items-center justify-center rounded-lg text-white font-bold transition-all shrink-0 hover:opacity-90"
-              >
-                <Send className="w-4 h-4" />
-              </button>
-            </form>
-          </div>
-        </div>
-      </div>
+      <BotBuilderForm 
+        key={activeBot.id} 
+        bot={activeBot} 
+        onSave={(data) => {
+          updateChatbotSettings(activeBot.id, data);
+          alert("Chatbot settings updated successfully!");
+        }} 
+      />
     );
   }
 
-  // KNOWLEDGE TAB
   function renderKnowledgeTab() {
     if (!activeBot) return null;
     return (
-      <div className="space-y-8 animate-fade-in">
-        
-        {/* Top Business general prompt info */}
-        <div className="glass-card p-6 border-slate-800 bg-slate-900/40">
-          <div className="border-b border-slate-850 pb-4 mb-4">
-            <h3 className="font-extrabold text-white text-base">Corporate Knowledge Grounding</h3>
-            <p className="text-slate-500 text-xs mt-1">This context acts as the primary knowledge ceiling for custom AI completions, ensuring the chatbot doesn&apos;t hallucinate about services.</p>
-          </div>
-          <div className="space-y-4">
-            <div className="space-y-1">
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">General Corporate & Business Information</label>
-              <textarea 
-                rows={5}
-                value={botBusinessInfo}
-                onChange={(e) => setBotBusinessInfo(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg text-xs glass-input"
-                placeholder="Type details about pricing, address, policies, packages, support timelines, products..."
-              />
-            </div>
-            <div className="flex justify-end">
-              <button 
-                onClick={() => {
-                  updateChatbotSettings(activeBot.id, { businessInfo: botBusinessInfo });
-                  alert("Corporate base knowledge updated!");
-                }}
-                className="px-5 py-2.5 rounded-lg text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 transition-all shadow-md shadow-indigo-600/10"
-              >
-                Sync Business Info
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* PDFs, URLs, Manual FAQs */}
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-          
-          {/* PDF files uploads list */}
-          <div className="glass-card border-slate-800 flex flex-col h-[400px]">
-            <div className="p-5 border-b border-slate-850 shrink-0">
-              <h3 className="font-bold text-white text-sm flex items-center gap-2">
-                <FileText className="w-4 h-4 text-pink-400" /> Upload PDF Manuals
-              </h3>
-            </div>
-            {/* list */}
-            <div className="flex-1 p-5 overflow-y-auto space-y-3">
-              {activeBot.pdfs.length === 0 ? (
-                <div className="text-center py-12 text-slate-500 text-xs">No corporate manuals added yet.</div>
-              ) : (
-                activeBot.pdfs.map(p => (
-                  <div key={p.id} className="p-3 bg-slate-950/60 border border-slate-850 rounded-lg flex items-center justify-between text-xs">
-                    <div className="min-w-0">
-                      <p className="font-semibold text-white truncate">{p.name}</p>
-                      <p className="text-[10px] text-slate-500">{p.size} • {p.status}</p>
-                    </div>
-                    <button 
-                      onClick={() => deletePDF(activeBot.id, p.id)}
-                      className="p-1.5 text-slate-500 hover:text-rose-400 rounded hover:bg-rose-500/10 shrink-0"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                ))
-              )}
-            </div>
-            {/* form */}
-            <form onSubmit={handleAddPdf} className="p-4 bg-slate-900/60 border-t border-slate-850 flex gap-2 shrink-0">
-              <input 
-                type="text" 
-                placeholder="Manual_Specifications.pdf"
-                value={pdfName}
-                onChange={(e) => setPdfName(e.target.value)}
-                className="flex-1 px-3 py-2 rounded text-xs bg-slate-950 border border-slate-800 text-white outline-none"
-                required
-              />
-              <button className="px-3 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded text-xs font-bold transition-all shrink-0">
-                Add
-              </button>
-            </form>
-          </div>
-
-          {/* Website URLs crawler */}
-          <div className="glass-card border-slate-800 flex flex-col h-[400px]">
-            <div className="p-5 border-b border-slate-850 shrink-0">
-              <h3 className="font-bold text-white text-sm flex items-center gap-2">
-                <Globe className="w-4 h-4 text-indigo-400" /> Crawl Website URLs
-              </h3>
-            </div>
-            {/* list */}
-            <div className="flex-1 p-5 overflow-y-auto space-y-3">
-              {activeBot.urls.length === 0 ? (
-                <div className="text-center py-12 text-slate-500 text-xs">No website links scraped yet.</div>
-              ) : (
-                activeBot.urls.map(u => (
-                  <div key={u.id} className="p-3 bg-slate-950/60 border border-slate-850 rounded-lg flex items-center justify-between text-xs">
-                    <p className="font-mono text-slate-300 truncate min-w-0 mr-3">{u.url}</p>
-                    <div className="flex items-center gap-1.5 shrink-0">
-                      <span className="text-[9px] text-emerald-400 font-bold bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/10">Crawled</span>
-                      <button 
-                        onClick={() => deleteURL(activeBot.id, u.id)}
-                        className="p-1.5 text-slate-500 hover:text-rose-400 rounded hover:bg-rose-500/10"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-            {/* form */}
-            <form onSubmit={handleAddUrl} className="p-4 bg-slate-900/60 border-t border-slate-850 flex gap-2 shrink-0">
-              <input 
-                type="url" 
-                placeholder="https://company.io/docs"
-                value={urlInput}
-                onChange={(e) => setUrlInput(e.target.value)}
-                className="flex-1 px-3 py-2 rounded text-xs bg-slate-950 border border-slate-800 text-white outline-none"
-                required
-              />
-              <button className="px-3 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded text-xs font-bold transition-all shrink-0">
-                Scrape
-              </button>
-            </form>
-          </div>
-
-          {/* Manual FAQs additions list */}
-          <div className="glass-card border-slate-800 flex flex-col h-[400px]">
-            <div className="p-5 border-b border-slate-850 shrink-0">
-              <h3 className="font-bold text-white text-sm flex items-center gap-2">
-                <MessageSquare className="w-4 h-4 text-emerald-400" /> Standard Q&A FAQs
-              </h3>
-            </div>
-            {/* list */}
-            <div className="flex-1 p-5 overflow-y-auto space-y-3">
-              {activeBot.faqs.length === 0 ? (
-                <div className="text-center py-12 text-slate-500 text-xs">No manual FAQs created. Add some below!</div>
-              ) : (
-                activeBot.faqs.map(f => (
-                  <div key={f.id} className="p-3 bg-slate-950/60 border border-slate-850 rounded-lg space-y-1.5 text-xs">
-                    <div className="flex items-center justify-between">
-                      <p className="font-bold text-white truncate pr-2">Q: {f.question}</p>
-                      <button 
-                        onClick={() => deleteFAQ(activeBot.id, f.id)}
-                        className="p-1 text-slate-500 hover:text-rose-400 rounded hover:bg-rose-500/10 shrink-0"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                    <p className="text-slate-400 text-[11px] leading-relaxed">A: {f.answer}</p>
-                  </div>
-                ))
-              )}
-            </div>
-            {/* form */}
-            <form onSubmit={handleAddFaq} className="p-4 bg-slate-900/60 border-t border-slate-850 space-y-2 shrink-0">
-              <input 
-                type="text" 
-                placeholder="Question (e.g. Return policy?)"
-                value={faqQ}
-                onChange={(e) => setFaqQ(e.target.value)}
-                className="w-full px-3 py-1.5 rounded text-xs bg-slate-950 border border-slate-800 text-white outline-none"
-                required
-              />
-              <div className="flex gap-2">
-                <input 
-                  type="text" 
-                  placeholder="Answer text..."
-                  value={faqA}
-                  onChange={(e) => setFaqA(e.target.value)}
-                  className="flex-1 px-3 py-1.5 rounded text-xs bg-slate-950 border border-slate-800 text-white outline-none"
-                  required
-                />
-                <button className="px-4 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded text-xs font-bold transition-all shrink-0">
-                  Save FAQ
-                </button>
-              </div>
-            </form>
-          </div>
-
-        </div>
-      </div>
+      <KnowledgeTabContent 
+        key={activeBot.id} 
+        bot={activeBot} 
+        onSyncBusinessInfo={(info) => {
+          updateChatbotSettings(activeBot.id, { businessInfo: info });
+        }} 
+      />
     );
   }
 
-  // EMBED WIDGET TAB
   function renderWidgetTab() {
     if (!activeBot) return null;
     return (
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 animate-fade-in">
-        
-        {/* Instructions and Copy code */}
         <div className="glass-card border-slate-800 p-6 space-y-6">
           <div className="border-b border-slate-850 pb-4">
             <h3 className="font-extrabold text-white text-base">Website Script Embed Code</h3>
@@ -951,7 +885,7 @@ export default function DashboardPage() {
               >
                 {copied ? <span className="text-emerald-400 font-bold font-sans text-[10px]">Copied!</span> : <Clipboard className="w-3.5 h-3.5" />}
               </button>
-              <p className="text-slate-500 font-bold mb-1">// Paste right before closing &lt;/body&gt; or &lt;/head&gt;</p>
+              <p className="text-slate-500 font-bold mb-1">{/* Paste right before closing body tag */}</p>
               &lt;script <br />
               &nbsp;&nbsp;src=&quot;{typeof window !== "undefined" ? window.location.origin : "https://chatflow-ai.vercel.app"}/chatflow-widget.js&quot;<br />
               &nbsp;&nbsp;bot-id=&quot;{activeBot.id}&quot;&gt;<br />
@@ -978,7 +912,6 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Live visualization floating bubble simulation */}
         <div className="glass-card border-slate-800 p-6 flex flex-col justify-center items-center relative overflow-hidden bg-gradient-to-tr from-slate-900/50 to-slate-950">
           <div className="absolute top-4 left-4 text-xs font-semibold text-slate-400">Appearance preview</div>
           <div className="text-center max-w-xs space-y-4">
@@ -988,7 +921,6 @@ export default function DashboardPage() {
               When embedded, a small pulsing gradient launcher with custom avatars loads quietly. Clicking the launcher displays the conversational sandbox we configured in the Appearance Panel.
             </p>
           </div>
-          {/* Custom preview box launcher */}
           <div className="mt-8 flex items-center gap-4 p-4 rounded-2xl bg-slate-950 border border-slate-850">
             <div 
               style={{ backgroundColor: activeBot.brandColor }}
@@ -1002,23 +934,18 @@ export default function DashboardPage() {
             </div>
           </div>
         </div>
-
       </div>
     );
   }
 
-  // ANALYTICS TAB
   function renderAnalyticsTab() {
     if (!activeBot) return null;
 
-    // Filter leads
     const botConvs = conversations.filter(c => c.chatbotId === activeBot.id);
     const botLeads = botConvs.filter(c => c.lead !== null);
 
     return (
       <div className="space-y-8 animate-fade-in">
-        
-        {/* Statistics highlights row */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <div className="glass-card p-5 border-slate-800 bg-slate-900/40">
             <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-1">Sessions Logs</span>
@@ -1038,10 +965,7 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Lead Table and Chat transcript inspector split */}
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-          
-          {/* Leads captured lists */}
           <div className="glass-card border-slate-800 xl:col-span-2 overflow-hidden flex flex-col h-[420px]">
             <div className="p-5 bg-slate-900/40 border-b border-slate-850 shrink-0 flex items-center justify-between">
               <h3 className="font-bold text-white text-sm flex items-center gap-2">
@@ -1081,7 +1005,6 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Active Chat transcripts inspector */}
           <div className="glass-card border-slate-800 flex flex-col h-[420px]">
             <div className="p-5 bg-slate-900/40 border-b border-slate-850 shrink-0">
               <h3 className="font-bold text-white text-sm">Interactive Session Logs</h3>
@@ -1096,7 +1019,6 @@ export default function DashboardPage() {
                       <span className="font-bold text-slate-300">{c.lead ? `Lead: ${c.lead.name}` : "Anonymous Session"}</span>
                       <span className="text-[10px] text-slate-500 font-mono">{c.timestamp}</span>
                     </div>
-                    {/* display messages */}
                     <div className="space-y-2 max-h-[140px] overflow-y-auto pr-1">
                       {c.messages.map(m => (
                         <div key={m.id} className="space-y-0.5">
@@ -1112,13 +1034,11 @@ export default function DashboardPage() {
               )}
             </div>
           </div>
-
         </div>
       </div>
     );
   }
 
-  // MANAGED MAINTENANCE TAB
   function renderSubscriptionTab() {
     return (
       <div className="space-y-8 animate-fade-in">
@@ -1139,7 +1059,6 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Subscription details cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="glass-card p-6 border-slate-800 bg-slate-900/40">
             <div className="flex items-center gap-2 mb-2 text-slate-400 text-xs font-bold">
@@ -1166,7 +1085,6 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Support Ticket Simulator */}
         <div className="glass-card border-slate-800">
           <div className="p-5 border-b border-slate-850">
             <h4 className="font-bold text-white text-sm">Request Managed Setup Assistance</h4>
@@ -1204,13 +1122,10 @@ export default function DashboardPage() {
     );
   }
 
-  // HANDOVER ZIP TAB
   function renderHandoverTab() {
     if (!activeBot) return null;
     return (
       <div className="space-y-8 animate-fade-in">
-        
-        {/* Callout explaining Handover package contents */}
         <div className="glass-card p-6 border-purple-500/30 bg-purple-950/10">
           <div className="flex items-start gap-4">
             <div className="p-3 bg-purple-500/10 border border-purple-500/20 rounded-xl text-purple-400">
@@ -1226,10 +1141,7 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Handover contents inspection checklist */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          
-          {/* List of files in ZIP */}
           <div className="glass-card border-slate-800">
             <div className="p-5 border-b border-slate-850">
               <h4 className="font-bold text-white text-sm">Output ZIP Structure Hierarchy</h4>
@@ -1249,7 +1161,6 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Trigger Transfer controls */}
           <div className="glass-card border-slate-800 p-6 flex flex-col justify-between h-full">
             <div className="space-y-4">
               <h4 className="font-bold text-white text-sm flex items-center gap-2">
@@ -1287,7 +1198,6 @@ export default function DashboardPage() {
               </button>
             </div>
           </div>
-
         </div>
       </div>
     );
