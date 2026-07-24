@@ -259,6 +259,8 @@ interface StoreContextType {
   // Client functions
   updateClientProfile: (clientId: string, updates: Partial<ClientProfile>) => void;
   addChatbot: (clientId: string, name: string) => Chatbot;
+  duplicateChatbot: (botId: string) => Chatbot | null;
+  deleteChatbot: (botId: string) => void;
   updateChatbotSettings: (botId: string, updates: Partial<Chatbot>) => void;
   addFAQ: (botId: string, question: string, answer: string) => void;
   deleteFAQ: (botId: string, faqId: string) => void;
@@ -387,6 +389,20 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     syncChatbots(updated);
     setActiveChatbotId(newBot.id);
     return newBot;
+  };
+
+  const duplicateChatbot = (botId: string): Chatbot | null => {
+    const source = chatbots.find(b => b.id === botId);
+    if (!source) return null;
+    const copy = { ...source, id: "bot-" + Math.random().toString(36).substring(2, 9), name: `${source.name} Copy` };
+    syncChatbots([...chatbots, copy]);
+    setActiveChatbotId(copy.id);
+    return copy;
+  };
+
+  const deleteChatbot = (botId: string) => {
+    syncChatbots(chatbots.filter(b => b.id !== botId));
+    if (activeChatbotId === botId) setActiveChatbotId(null);
   };
 
   const updateChatbotSettings = (botId: string, updates: Partial<Chatbot>) => {
@@ -660,6 +676,8 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         setActiveChatbotId,
         updateClientProfile,
         addChatbot,
+        duplicateChatbot,
+        deleteChatbot,
         updateChatbotSettings,
         addFAQ,
         deleteFAQ,
