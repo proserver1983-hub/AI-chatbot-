@@ -2,29 +2,17 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useStore, ClientProfile } from "@/lib/store";
 import { 
   Bot, 
-  Users, 
-  Layers, 
-  CreditCard, 
-  Wrench, 
-  Download, 
-  Plus, 
   Trash2, 
   ArrowLeft, 
   ShieldAlert, 
-  CheckCircle, 
-  Settings, 
   Search, 
-  LineChart, 
-  FileText,
   UserCheck
 } from "lucide-react";
 
 export default function AdminPanelPage() {
-  const router = useRouter();
   const { clients, chatbots, conversations, currentUser, setCurrentUser, updateSubscription, startOwnershipTransfer, deleteClient } = useStore();
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -77,11 +65,9 @@ export default function AdminPanelPage() {
       }
     };
 
-    // Since we save via react state and sync, this works perfectly
     clients.push(newC);
     localStorage.setItem("chatflow_clients", JSON.stringify(clients));
     
-    // Clean fields
     setNewClientName("");
     setNewClientEmail("");
     setNewClientCompany("");
@@ -103,17 +89,14 @@ export default function AdminPanelPage() {
     }
   };
 
-  // Safe Check: Ensure logged in as admin to see full visual options, else render easy upgrade helper
   const isAdmin = currentUser?.role === 'admin';
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 dark-gradient-bg flex flex-col relative overflow-hidden">
       
-      {/* Lights */}
       <div className="absolute top-0 right-1/4 w-[500px] h-[500px] bg-pink-600/5 rounded-full blur-[150px] pointer-events-none" />
       <div className="absolute bottom-0 left-1/4 w-[500px] h-[500px] bg-indigo-600/5 rounded-full blur-[150px] pointer-events-none" />
 
-      {/* Header */}
       <header className="glass-card mx-4 my-3 px-6 py-4 flex items-center justify-between border-slate-800/80">
         <Link href="/" className="flex items-center gap-2">
           <Bot className="w-6 h-6 text-pink-400" />
@@ -127,7 +110,6 @@ export default function AdminPanelPage() {
       </header>
 
       {!isAdmin ? (
-        // Non-admin onboarding placeholder
         <main className="flex-1 container mx-auto px-6 py-16 max-w-xl flex flex-col justify-center">
           <div className="glass-card p-8 border-slate-800 bg-slate-900/40 text-center space-y-6">
             <ShieldAlert className="w-16 h-16 text-pink-500 mx-auto" />
@@ -150,10 +132,8 @@ export default function AdminPanelPage() {
           </div>
         </main>
       ) : (
-        // Real Admin Dashboard UI
         <main className="flex-1 container mx-auto px-6 py-8 max-w-6xl space-y-8 animate-fade-in">
           
-          {/* Stats header */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <div className="glass-card p-5 border-slate-850 bg-slate-900/20">
               <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block">Total Platform Clients</span>
@@ -175,7 +155,6 @@ export default function AdminPanelPage() {
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             
-            {/* Left Col - Client Registry & Management (Col-span 2) */}
             <div className="lg:col-span-2 space-y-6">
               <div className="glass-card border-slate-800">
                 <div className="p-5 border-b border-slate-850 flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -251,19 +230,17 @@ export default function AdminPanelPage() {
                 </div>
               </div>
 
-              {/* Selected client detailed view panel (loads conditionally below) */}
               {selectedClient && (
                 <div className="glass-card p-6 border-slate-800 bg-slate-900/40 space-y-6">
                   <div className="flex items-center justify-between border-b border-slate-850 pb-4">
                     <div>
                       <h4 className="font-extrabold text-white text-base">Workspace Operations Management</h4>
-                      <p className="text-slate-500 text-xs mt-0.5">Control subscriptions, update states, and execute code transfers for **{selectedClient.companyName}**.</p>
+                      <p className="text-slate-500 text-xs mt-0.5">Control subscriptions, update states, and execute code transfers for {selectedClient.companyName}.</p>
                     </div>
                     <button onClick={() => setSelectedClient(null)} className="text-slate-500 hover:text-white font-bold text-xs">Close</button>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* Change Plan Settings */}
                     <div className="space-y-4">
                       <h5 className="font-bold text-slate-300 text-xs uppercase tracking-wider">Subscription Management</h5>
                       
@@ -306,7 +283,6 @@ export default function AdminPanelPage() {
                       </div>
                     </div>
 
-                    {/* Trigger Ownership Handover */}
                     <div className="space-y-4">
                       <h5 className="font-bold text-slate-300 text-xs uppercase tracking-wider">Transfer Actions</h5>
                       <p className="text-xs text-slate-400 leading-relaxed">
@@ -330,7 +306,6 @@ export default function AdminPanelPage() {
               )}
             </div>
 
-            {/* Right Col - Register Manual Client Form */}
             <div className="space-y-6">
               <div className="glass-card border-slate-800 p-6 space-y-4">
                 <div className="border-b border-slate-850 pb-3">
@@ -383,7 +358,7 @@ export default function AdminPanelPage() {
                     <label className="text-[10px] font-bold text-slate-400 uppercase">Plan Type</label>
                     <select 
                       value={newClientPlan} 
-                      onChange={(e) => setNewClientPlan(e.target.value as any)}
+                      onChange={(e) => setNewClientPlan(e.target.value as ClientProfile["subscription"]["plan"])}
                       className="w-full p-2.5 rounded bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-indigo-500 cursor-pointer"
                     >
                       <option value="Monthly Maintenance">Monthly Maintenance Plan ($199/mo)</option>
@@ -406,7 +381,6 @@ export default function AdminPanelPage() {
         </main>
       )}
 
-      {/* Footer */}
       <footer className="border-t border-slate-900 bg-slate-950/60 py-6 text-center text-xs text-slate-600">
         <p>© 2026 ChatFlow AI Platforms Inc. Administrator credentials authorized under active SSL security policies.</p>
       </footer>

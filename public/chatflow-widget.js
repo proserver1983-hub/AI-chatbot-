@@ -24,7 +24,6 @@
     faqs: []
   };
 
-  let conversationId = null;
   let chatHistory = [];
 
   // Create Stylesheet

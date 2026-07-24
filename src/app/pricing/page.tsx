@@ -8,11 +8,7 @@ import {
   ArrowLeft, 
   CheckCircle, 
   Wrench, 
-  Layers, 
-  Sparkles, 
-  ShieldAlert, 
-  Cpu, 
-  ArrowRight 
+  Layers 
 } from "lucide-react";
 
 export default function PricingPage() {

@@ -1,6 +1,32 @@
 import { NextResponse } from "next/server";
 import JSZip from "jszip";
 
+interface FAQItem {
+  id: string;
+  question: string;
+  answer: string;
+}
+
+interface LeadItem {
+  id?: string;
+  name?: string;
+  email?: string;
+  phone?: string;
+}
+
+interface MessageItem {
+  id?: string;
+  sender: string;
+  text: string;
+}
+
+interface ConversationItem {
+  id: string;
+  browser?: string;
+  location?: string;
+  messages?: MessageItem[];
+}
+
 export async function POST(request: Request) {
   try {
     const body = await request.json();
@@ -126,7 +152,7 @@ export default async function handler(req, res) {
 </html>`);
 
     // Generate Source-Code.zip buffer
-    const sourceZipBuffer = await sourceZip.generateAsync({ type: "uint8array" });
+    const sourceZipBuffer = await sourceZip.generateAsync({ type: "nodebuffer" });
     mainZip.file("Source-Code.zip", sourceZipBuffer);
 
     // 2. Widget-Code.txt
@@ -149,7 +175,7 @@ Follow these instructions to integrate your custom AI Chatbot "${botName}" into 
 
 3. CUSTOM APPEARANCE CONFIGURATION:
 - Brand Color: ${brandColor}
-- Bot Avatar Icon: ${avatarIconSelector(welcomeMessage)}
+- Bot Avatar Icon: ${avatarIconSelector()}
 - Custom Welcome Message: "${welcomeMessage || "Welcome!"}"
 - Target Personality: "${personality || "Helpful Assistant"}"
 `;
@@ -251,8 +277,8 @@ ON CONFLICT (id) DO NOTHING;
 -- 4. INSERT CLIENT FAQS
 `;
 
-    if (faqs && faqs.length > 0) {
-      faqs.forEach((f: any) => {
+    if (faqs && (faqs as FAQItem[]).length > 0) {
+      (faqs as FAQItem[]).forEach((f: FAQItem) => {
         sqlDump += `INSERT INTO public.faqs (id, chatbot_id, question, answer) VALUES ('${f.id}', '${botId}', '${f.question.replace(/'/g, "''")}', '${f.answer.replace(/'/g, "''")}');\n`;
       });
     } else {
@@ -260,20 +286,20 @@ ON CONFLICT (id) DO NOTHING;
     }
 
     sqlDump += `\n-- 5. INSERT CAPTURED LEADS\n`;
-    if (leads && leads.length > 0) {
-      leads.forEach((l: any) => {
-        sqlDump += `INSERT INTO public.leads (id, chatbot_id, name, email, phone, created_at) VALUES ('${l.id || "lead-" + Math.random().toString(36).substring(2, 5)}', '${botId}', '${(l.name || "Anonymous").replace(/'/g, "''")}', '${l.email}', '${l.phone}', CURRENT_TIMESTAMP);\n`;
+    if (leads && (leads as LeadItem[]).length > 0) {
+      (leads as LeadItem[]).forEach((l: LeadItem) => {
+        sqlDump += `INSERT INTO public.leads (id, chatbot_id, name, email, phone, created_at) VALUES ('${l.id || "lead-" + Math.random().toString(36).substring(2, 5)}', '${botId}', '${(l.name || "Anonymous").replace(/'/g, "''")}', '${l.email || ""}', '${l.phone || ""}', CURRENT_TIMESTAMP);\n`;
       });
     } else {
       sqlDump += `-- No captured leads to export yet.\n`;
     }
 
     sqlDump += `\n-- 6. INSERT RECENT CONVERSATIONS & MESSAGES\n`;
-    if (conversations && conversations.length > 0) {
-      conversations.forEach((c: any) => {
+    if (conversations && (conversations as ConversationItem[]).length > 0) {
+      (conversations as ConversationItem[]).forEach((c: ConversationItem) => {
         sqlDump += `INSERT INTO public.conversations (id, chatbot_id, browser, location, created_at) VALUES ('${c.id}', '${botId}', '${c.browser || "Chrome"}', '${c.location || "US"}', CURRENT_TIMESTAMP);\n`;
         if (c.messages && c.messages.length > 0) {
-          c.messages.forEach((m: any) => {
+          c.messages.forEach((m: MessageItem) => {
             sqlDump += `  INSERT INTO public.messages (id, conversation_id, sender, message_text, created_at) VALUES ('${m.id || "msg-" + Math.random().toString(36).substring(2, 5)}', '${c.id}', '${m.sender}', '${m.text.replace(/'/g, "''")}', CURRENT_TIMESTAMP);\n`;
           });
         }
@@ -288,7 +314,6 @@ ON CONFLICT (id) DO NOTHING;
 
     mainZip.file("Database-Export.sql", sqlDump);
 
-    // 4. Setup-Guide.pdf (Simulated as formatted Markdown text structure for high compatibility, named .pdf for structure compliance)
     const setupGuideText = `========================================================================
 CHATFLOW AI - DEVELOPER SETUP & DEPLOYMENT GUIDE (.PDF)
 ========================================================================
@@ -339,10 +364,8 @@ B. AWS / Docker:
      $ npm run build
      $ npm run start
 `;
-    // Write setup guide
     mainZip.file("Setup-Guide.pdf", setupGuideText);
 
-    // 5. Documentation.pdf
     const documentationText = `========================================================================
 CHATFLOW AI - SYSTEM DOCUMENTATION & USER MANUAL (.PDF)
 ========================================================================
@@ -374,7 +397,6 @@ Your chatbot utilizes a combination of Exact FAQ Matching and Semantic Prompt in
 `;
     mainZip.file("Documentation.pdf", documentationText);
 
-    // 6. Ownership-Agreement.pdf
     const agreementText = `========================================================================
 CHATFLOW AI - CODE & INTELLECTUAL PROPERTY TRANSFER AGREEMENT (.PDF)
 ========================================================================
@@ -412,25 +434,26 @@ Digitally Authorized by ${clientName}
     mainZip.file("Ownership-Agreement.pdf", agreementText);
 
     // Generate Final zip buffer
-    const mainZipBuffer = await mainZip.generateAsync({ type: "uint8array" });
+    const mainZipBuffer = await mainZip.generateAsync({ type: "nodebuffer" });
 
     // Format safe client filename
     const safeClientName = companyName.replace(/[^a-zA-Z0-9]/g, "_");
     const filename = `${safeClientName}_ChatFlow_Handover.zip`;
 
-    return new NextResponse(mainZipBuffer as any, {
+    return new NextResponse(new Uint8Array(mainZipBuffer), {
       headers: {
         "Content-Type": "application/zip",
         "Content-Disposition": `attachment; filename="${filename}"`,
       },
     });
-  } catch (error: any) {
-    console.error("Ownership Transfer Zip creation failed:", error);
+  } catch (err: unknown) {
+    const errorMessage = err instanceof Error ? err.message : "Unknown error";
+    console.error("Ownership Transfer Zip creation failed:", errorMessage);
     return NextResponse.json({ error: "Failed to generate handover zip package." }, { status: 500 });
   }
 }
 
 // Utility to fetch bot avatar
-function avatarIconSelector(msg: string) {
+function avatarIconSelector() {
   return "🤖";
 }
